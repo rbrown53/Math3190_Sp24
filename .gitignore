@@ -1,4 +1,20 @@
+## Mardown log files*.log
+*/*.log
+*/*/*.log
+## R History files
+.Rhistory
+*/.Rhistory
+*/*/.Rhistory
 ## DS_Store files
 *.DS_Store
 */*.DS_Store
 */*/*.DS_Store
+## other files that are made by R markdown or latex:
+*/*.nav
+*/*.aux
+*/*.snm
+*/*.toc
+*/*/*.nav
+*/*/*.aux
+*/*/*.snm
+*/*/*.toc
