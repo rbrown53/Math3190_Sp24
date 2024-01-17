@@ -44,7 +44,7 @@ R Markdown is a format for **literate programming** documents. \vspace{.2in}
 
 It is based on **markdown**, a markup language that is widely used to generate html pages. \vspace{.2in}
 
-You can learn more about markdown here: [click here](https://www.markdowntutorial.com/)
+You can learn more about markdown here: [https://www.markdowntutorial.com/](https://www.markdowntutorial.com/)
 
 \vspace{.2in}
 
@@ -225,9 +225,10 @@ There is a lot more you can do with R Markdown. I highly recommend you continue 
 
 1.  R Studio's tutorial: <https://rmarkdown.rstudio.com>
 2.  The R Markdown Cookbook: <https://bookdown.org/yihui/rmarkdown-cookbook>
-3.  The cheat sheet and reference guide: in RStudio -> Help -> Cheat Sheets -> R Markdown Cheat Sheet or R Markdown Reference Guide
-4.  The knitR book: <https://yihui.name/knitr/>
-5. \LaTeX\ command guide: <https://www.bu.edu/math/files/2013/08/LongTeX1.pdf>
+3.  The R Markdown definitibe guide: <https://bookdown.org/yihui/rmarkdown>
+4.  The cheat sheet and reference guide: in RStudio -> Help -> Cheat Sheets -> R Markdown Cheat Sheet or R Markdown Reference Guide
+5.  The knitR book: <https://yihui.name/knitr/>
+6. \LaTeX\ command guide: <https://www.bu.edu/math/files/2013/08/LongTeX1.pdf>
 
 ## Extra - Mac Quick Look Previewing
 
