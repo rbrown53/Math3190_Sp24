@@ -22,64 +22,6 @@ editor_options:
 
 \tableofcontents
 
-# Communicating Science
-
-## Communicating Science
-
-Effective science communicators educate non-specialist audiences about scientific topics, issues, and debates in ways that are informative, accessible, and empowering. \vspace{.1in}
-
-Science communicators should be able to answer the following questions:
-
--   Who is my audience?
--   What is my message for my audience?
--   What medium am I going to use to communicate my message to my audience?
-
-## Communicating Science
-
-The **lay public** is made up of all the people who are not experts in a specific field. When addressing the lay public:
-
--   Keep the story simple and front-load exciting aspects
--   Make the story relevant to your audience
--   Use analogies and visuals
--   Front-load the story
--   Avoid jargon - simple language but don't oversimplify
--   Include the people and the process (challenges, successes, collaborations, etc.)
-
-## Communicating Science
-
-The **media** is a "mediator" between scientists and the public. Note the media is not a homogeneous group. \vspace{.1in}
-
-Describing your process, challenges, successes, and collaborations are important for writing an informative and engaging press release. Read a few popular science articles to get a sense of how your research might eventually appear in the news and magazines. \vspace{.1in}
-
-Articles about your work should include visuals--videos or photos--that will draw readers' attention to the article and help them grasp the gist of the piece.
-
-## Communicating Science
-
-Scientists can share their knowledge with **policy makers** through meetings, testimonies, and open presentations. Suggestions for communicating with policy makers:
-
--   Know what issues policy makers are currently discussing and debating
--   Keep your explanations simple and relevant
--   Think of some actionable solutions to the problem
--   Think about the problem and solution in the context of the policy maker's constituency
--   Be confident in yourself and what you know
--   Approach a meeting as a conversation, not a presentation
--   Create a one-pager with your message and key points
-
-## Communicating Science
-
-Visuals make the data supporting your message clear and accessible to your audience. Science visualizations include:
-
-1.  Graphs, tables, and infographics
-2.  Conceptual diagrams
-3.  Maps, Satellite photos
-4.  Photographs
-
-Keep the following points in mind:
-
-1.  Use a consistent style and format
-2.  Use colors with purpose
-3.  Use high-resolution graphics when possible
-4.  Format your graphics and include labels, legends, and captions
 
 # R Markdown
 
@@ -275,26 +217,27 @@ This will transform the top bar to this interface that relies less on code and m
 
 We will explore other R Markdown options: headers, tabsets, and latex equations in class and in your homework. 
 
-\underline{Note:} From now on, all homework should be completed using an **R** Markdown document (uploaded to GitHub). Your document should include headers, descriptive text, **R** code, and plots/figures!
+\underline{Note:} From now on, all homework should be completed using an R Markdown document (uploaded to GitHub). Your document should include headers, descriptive text, **R** code, and plots/figures!
 
 ## More on R Markdown
 
 There is a lot more you can do with R Markdown. I highly recommend you continue learning as you gain more experience writing reports in **R**. There are many free resources on the internet including:
 
 1.  R Studio's tutorial: <https://rmarkdown.rstudio.com>
-2.  The cheat sheet and reference guide: in RStudio -> Help -> Cheat Sheets -> R Markdown Cheat Sheet or R Markdown Reference Guide
-3.  The knitR book: <https://yihui.name/knitr/>
-4. \LaTeX\ command guide: <https://www.bu.edu/math/files/2013/08/LongTeX1.pdf>
+2.  The R Markdown Cookbook: <https://bookdown.org/yihui/rmarkdown-cookbook>
+3.  The cheat sheet and reference guide: in RStudio -> Help -> Cheat Sheets -> R Markdown Cheat Sheet or R Markdown Reference Guide
+4.  The knitR book: <https://yihui.name/knitr/>
+5. \LaTeX\ command guide: <https://www.bu.edu/math/files/2013/08/LongTeX1.pdf>
 
 ## Extra - Mac Quick Look Previewing
 
 If you use the preview feature in macOS (pressing the space bar when highlighting a file in preview), you'll notice that there is no preview available for `.md` files, `.Rmd` files, or files without an extension. You can install \href{https://github.com/sbarex/QLMarkdown}{QLMarkdown} and \href{https://github.com/sbarex/SourceCodeSyntaxHighlight}{Syntax Highlight} to enable quick viewing of those files.
 
-# Python in **R** Markdown
+# Python in R Markdown
 
 ## Python Intro
 
-One useful feature in **R** Markdown is the ability to run code chunks from other languages. One of the most useful is the ability to run Python inside of **R** Markdown. 
+One useful feature in R Markdown is the ability to run code chunks from other languages. One of the most useful is the ability to run Python inside of R Markdown. 
 
 Technically, Python is running through **R**, which can be achieved using the `reticulate` package. This will make it a bit slower than running Python natively. 
 
@@ -501,6 +444,7 @@ NULL, TRUE, FALSE & None, True, False\\
 
 (Note: to give proper credit, I borrowed some material from Jeff Leek's **R** package [tutorial on GitHub](https://github.com/jtleek/rpackages) for these slides and code.)
 
+Another excellent resource on package development is this R Packages book: https://r-pkgs.org. 
 
 ## Getting Started
 
@@ -517,13 +461,13 @@ library(styler)
 library(testthat)
 ```
 
-We will first create our package structure. Go to the directory where you want your package to be created:
+We will first create our package structure. Go to the directory where you want your package to be created. For example, if you want it created in a folder called "github", in RStudio, we would type
 ```{r create, eval = F}
-setwd("~/github/")
-devtools::create("mypackage")
+setwd("~/path/to/github/")
+devtools::create("package_name")
 ```
 
-This will create a folder called "mypackage" and add some important files in it. Now we need to connect it to GitHub. Create a repo in GitHub with the same name: "mypackage". Then we need to navigate to the local mypackage directory in the terminal that was just created. Add a `README.md` file in there. 
+This will create a folder called "package_name" and add some important files in it. Now we need to connect it to GitHub. Create a repo in GitHub with the same name: "package_name". Then we need to navigate to the local package_name directory in the terminal that was just created. It is good practice to add a `README.md` file in there. 
 
 ## Getting Started
 
@@ -532,7 +476,7 @@ Then we can issue the following commands
 \small
 ```{bash, eval = F, echo = T}
 git init
-git remote add origin https://github.com/username/mypackage.git
+git remote add origin https://github.com/username/package_name.git
 git add *
 git add .gitignore
 git commit -m "initial commit"
@@ -549,7 +493,7 @@ Every package should have a license that informs how other people may use it. Th
 You can automate your license selection with the **usethis** package in the tidyverse: 
 
 ```{r license, eval = F}
-setwd("~/github/mypackage")
+setwd("~/path/to/package_name")
 usethis::use_mit_license()
 ```
 
@@ -586,7 +530,8 @@ if (x > 3) {
 ```
 
 ## Adding Functions
-Okay! We are ready to start adding functions to our **R** package. In the R/ directory, we can add a new file (RStudio$\rightarrow$R Script) named **hello.R** and add the code: 
+
+Of course, we will want to add functions to our **R** package. In the R/ directory, we can add a new file (RStudio$\rightarrow$R Script) with the name of our function. For example, we could create a file called **hello.R** and add the code: 
 
 ```{r hello,eval=F}
 hello <- function() {
@@ -594,24 +539,23 @@ hello <- function() {
 }
 ```
 
-
 And just this once, we can go to the NAMESPACE and add "export(hello)" to the file.
 
 ## Installing Packages
-Now we can install the package using **devtools::install**. From the **mypackage** package directory, enter:
+Now we can install the package using **devtools::install()**. From the **package_name** package directory, enter:
 ```{r install0, eval=FALSE }
 devtools::install()
 ```
 
 Now check if it worked!
 ```{r install1, eval=FALSE }
-library(mypackage)
+library(package_name)
 hello()
 ```
 
-Now go and add two more functions to your package: __addition.R__ and __subtraction.R__. And make sure to add them to the NAMESPACE (this is the last time you should ever do this in your career!!
+Now we can go and add two more functions to your package: __addition.R__ and __subtraction.R__. And make sure to add them to the NAMESPACE (this is the last time you should ever do this in your career!!
 
-Install the package and confirm that it works!
+Then we can install the package again and confirm that it works.
 
 ## Documenting **R** Packages
 There are some AMAZING tools, such as **roxygen2**, that are available that make documenting your packages very easy!  So no excuses!
@@ -671,7 +615,7 @@ Once you have added documentation to all of your functions, use **devtools::docu
 devtools::document()
 ```
 
-Now check to see how this changes your **mypackage** directory. Then reinstall the package, and look at the help for your functions, for example:
+Now check to see how this changes your **package_name** directory. Then reinstall the package, and look at the help for your functions, for example:
 ```{r document 2, eval=F}
 ?hello
 ?addition
@@ -744,11 +688,12 @@ In this `name_of_dataset.R` file, the last line will already be added for you. A
 
 ## Adding Data Sets to the Package
 
-It is a good idea to add the line 
+By the way, after doing what is described on the previpus slide, the line 
 ```{bash, eval = F}
 LazyData: true
 ```
-to the DESCRIPTION file since that will prevent needing to type `data(dataset_name)` every time you load the package.
+\vspace{-.1in}
+should be automatically added to the DESCRIPTION file. If it wasn't, you may want to add it since that will prevent needing to type `data(dataset_name)` to access the data set every time you load the package.
 
 
 ## Data Set Documentation
@@ -771,7 +716,7 @@ and a `data.R` file will be created in the `R/` folder. In that file, we should 
 #' @source Put the url of the data set if it was found online.
 "name_of_dataset"
 ```
-This will allow us to get documentation by typing `?data_set_name`.
+This will allow us to get documentation by typing `?data_set_name` after the package is loaded in **R**.
 
 ## Creating a Package Manual
 
