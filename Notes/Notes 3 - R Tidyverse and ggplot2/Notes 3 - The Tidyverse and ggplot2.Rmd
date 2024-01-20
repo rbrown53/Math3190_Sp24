@@ -847,6 +847,60 @@ p + geom_point(size=0.5) + facet_grid(rows = vars(cut),
        title = "Carat versus price, separated by color")
 ```
 
+# Ian's 2 cents
+
+## The wrong way to use pipes
+Due to the way R's compiler works, pipes are forced to go at the end of the line:
+```{r pipes_wrong}
+murders |>
+  mutate(rate = total / population * 100000) |>
+  select(state, rate) |>
+  filter(rate <= 0.71)
+```
+
+## The right way to use pipes
+However, pipes were designed to go at the beginning of the line. We can surround the code with parenthesis to trick R's compiler into accepting this  style:
+```{r pipes_right}
+(
+murders 
+  |> mutate(rate = total / population * 100000) 
+  |> select(state, rate) 
+  |> filter(rate <= 0.71)
+)
+```
+
+
+## Plots with emojis
+
+Have you ever wanted to make a scatter plot where each point is an emoji? We can thanks to the emoGG library by dill on github: <https://github.com/dill/emoGG> 
+
+We can install the library using the following code:
+```{r emoGG_install, eval=F}
+devtools::install_github("dill/emoGG")
+```
+It builds upon ggplot, so we need to load both libraries:
+```{r emoGG_loads}
+library(ggplot2)
+library(emoGG)
+```
+
+## Finding an emoji
+To make a plot using emojis, we first need to know which emojis to use. The `emoji_search` function will show emojis that somewhat match a given string:
+```{r emoji_search}
+emoji_search("dinosaur") |> head(5)
+```
+
+Sauropod seems like a good option, so let's keep track of its code: `1f995`.
+
+## Making an emoji scatter plot
+To create a scatter plot using emojis we simply need to substitute the `geom_point` function with `geom_emoji`. This function takes in an emoji code as an argument. In this case, the emoji code for a sauropod is `1f995`.
+```{r emoGG_plot,out.width="45%"}
+# make the basis for a plot using ggplot save it as p
+p <- ggplot(data = diam, aes(x = carat, y = price))
+# add a geom_emoji (points) and display the plot
+p + geom_emoji(emoji="1f995")
+```
+
 ## Summary
 
 The syntax of a ggplot is `ggplot(data, aes(x, y))` and you add on to the plot with `+` at the end of each line.
