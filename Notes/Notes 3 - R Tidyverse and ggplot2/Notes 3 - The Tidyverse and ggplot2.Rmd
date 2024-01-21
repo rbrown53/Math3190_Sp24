@@ -894,13 +894,36 @@ emoji_search("dinosaur") |> head(5)
 Sauropod seems like a good option, so let's keep track of its code: `1f995`.
 
 ## Ian's 2 Cents -- Making an emoji scatter plot
-To create a scatter plot using emojis we simply need to substitute the `geom_point` function with `geom_emoji`. This function takes in an emoji code as an argument. In this case, the emoji code for a sauropod is `1f995`.
-```{r emoGG_plot,out.width="45%"}
-# make the basis for a plot using ggplot save it as p
-p <- ggplot(data = diam, aes(x = carat, y = price))
-# add a geom_emoji (points) and display the plot
-p + geom_emoji(emoji="1f995")
+To create a scatter plot using emojis we simply need to substitute the `geom_point()` function with `geom_emoji()`. This function takes in an emoji code as an argument. In this case, the emoji code for a sauropod is `1f995`.
+
+\small
+```{r emoGG_plot1, out.width="45%", message = F, eval = F}
+library(gridExtra) # Allows outputted plots to be arranged
+# make the basis for a plot using ggplot and save it as p
+x <- rnorm(100)
+y <- x + rnorm(100, 0, 0.5)
+p <- ggplot(data = data.frame(x = x, y = y), aes(x = x, y = y))
+# add geom_point and geom_emoji and display the plots in a grid
+#  with 2 columns
+grid.arrange(p + geom_point(), 
+             p + geom_emoji(emoji="1f995"), 
+             ncol = 2)
 ```
+
+## Comparing Regular and Emoji Scatter Plots
+```{r emoGG_plot2, fig.width=8, fig.height=4, message = F, echo = F}
+library(gridExtra) # Allows outputted plots to be arranged
+# make the basis for a plot using ggplot and save it as p
+x <- rnorm(100)
+y <- x + rnorm(100, 0, 0.5)
+p <- ggplot(data = data.frame(x = x, y = y), aes(x = x, y = y))
+# add geom_point and geom_emoji and display the plots in a grid
+#  with 2 columns
+grid.arrange(p + geom_point(), 
+             p + geom_emoji(emoji="1f995"), 
+             ncol = 2)
+```
+
 
 ## Summary
 
