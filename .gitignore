@@ -20,5 +20,9 @@
 */*/*.toc
 *_cache
 *_files
+*/*_cache
+*/*_files
+*/*/*_cache
+*/*/*_files
 ## Hidden windows files
 ~*
