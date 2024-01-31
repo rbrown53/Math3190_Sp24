@@ -5,9 +5,7 @@ author: |
   | Southern Utah University
 date: "Math 3190"
 output: 
-  #html_document
-  beamer_presentation:
-    theme: CambridgeUS
+  html_document
 header-includes:
   - \usepackage{amsmath}
   - \makeatletter
@@ -19,6 +17,7 @@ params:
   application_task
 editor_options: 
   chunk_output_type: console
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
@@ -498,6 +497,9 @@ shinyApp(server = server, ui = ui)
 library(shiny)
 ui <- fluidPage(
   shinyjs::useShinyjs(),
+  tags$audio(controls = NA,
+             tags$source(src = "media/Shiny.wav", type = "audio/wav"),
+             tags$source(src = "media/Shiny.mp3", type = "audio/mpeg")),
   textInput("cor_guess", "Guess the correlation!"),
   actionButton(
     inputId = "submit_guess",
@@ -506,9 +508,11 @@ ui <- fluidPage(
   plotOutput("graph"),
   textOutput("message"),
   actionButton("reset_input", "Press to Play Again!")
+  
 )
 
 server <- function(input, output, session) {
+    addResourcePath("media", "media") 
     guess <- reactive(as.numeric(input$cor_guess))
     num_rand <- reactive(rchisq(input$num, 10))
     x <- rnorm(100, rnorm(1, 100, 50), rchisq(1, 10, 5))
