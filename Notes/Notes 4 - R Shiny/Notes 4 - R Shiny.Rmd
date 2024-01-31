@@ -17,6 +17,8 @@ tables: true
 urlcolor: blue
 params: 
   application_task
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -28,7 +30,7 @@ library(dslabs)
 
 ## What is Shiny?
 
-`Shiny` is an **R** package that allows you to easily create rich, interactive web apps around your **R** functions and packages. `Shiny` allows you to take your work in **R** and disseminate it via a web browser so that anyone can use it. `Shiny` makes you look awesome by making it easy to produce polished web apps with a minimum amount of pain.
+`Shiny` is an **R** package that allows you to (relatively) easily create rich, interactive web apps around your **R** functions and packages. `Shiny` allows you to take your work in **R** and disseminate it via a web browser so that anyone can use it. `Shiny` makes you look awesome by making it easy to produce polished web apps with a minimum amount of pain.
 
 (Credit: Some of the images and slide text were taken and adapted from <https://mastering-shiny.org> and RStudio's `Shiny` tutorials)
 
@@ -60,7 +62,7 @@ To create your first `Shiny` App you will need:
 
 ## Getting Started
 
-If you haven't already installed `Shiny`, install it now with:
+If you haven't already installed `Shiny`, install it with:
 
 ```{r shiny_install, eval=F, echo=T}
 install.packages("shiny")
@@ -139,7 +141,8 @@ server <- function(input, output) {}
 shinyApp(ui = ui, server = server)
 ```
 
-Take note that the `ui` (or `fluidPage` function) is what controls what the app looks like and takes inputs from the user. The `server` function controls what the app is doing. 
+\vspace{-.05in}
+Take note that the `ui` (or `fluidPage()` function in this case) is what controls what the app looks like and takes inputs from the user. The `server` function controls what the app is doing. `fluidPage()` is not the only function that can be used for the UI, but it is a good place to start.
 
 ## Adding Elements to the UI
 
@@ -213,7 +216,7 @@ You can access inputs from the UI using **input\$** \center ![](shinyfigs/shiny_
 
 ## Render Functions in an App
 
-A `render...()` function is used in the `server` function to create an attribute of `output`. 
+A `render...()` function (that is, a function that begins with the word "render") is used in the `server` function to create an attribute of `output`. 
 
 You can save your outputs to return to the UI using **output\$** and build objects to display with a function whose name begins with `render`.
 
@@ -241,22 +244,20 @@ shinyApp(server = server, ui = ui)
 
 ## Output Functions in an App
 
-Now that an attribute of `output` has been created, we need an `Output()` function inside `fluidPage()` in the `ui`. The name of the output attribute created in the `server` function must go in quotes.
+Now that an attribute of `output` has been created, we need a `...Output()` function (a function that ends with the word "Output") inside `fluidPage()` in the `ui`. The name of the output attribute created in the `server` function must go in quotes.\vspace{-.05in}
 
 ```{r output,eval=F,echo=T}
 ui <- fluidPage(
   sliderInput(inputId = "num",
     label = "Choose a number",
     value = 25, min = 1, max = 100), # Comma! 
-    plotOutput("hist")
+  plotOutput("hist")
   )
-
 server <- function(input, output) {
   output$hist <- renderPlot({
     hist(rnorm(input$num))
     })
 }
-
 shinyApp(server = server, ui = ui)
 ```
 
@@ -374,9 +375,9 @@ There are 2 basic rules for your **fluidPage()** function:
 
 There are 3 basic rules for your **server** function:
 
-1. Access input values with `input$`.
-2. Save objects to display as `output$`.
-3. Build objects to display with `render...()`.
+1. Save objects to display as `output$`.
+2. Build objects to display with `render...()`.
+3. Access input values with `input$`.
 
 
 
