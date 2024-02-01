@@ -1,0 +1,765 @@
+---
+title: "Notes 5 - Databases and SQL"
+author: |
+  | Rick Brown
+  | Southern Utah University
+date: "Math 3190"
+output: 
+ beamer_presentation:
+    theme: CambridgeUS
+header-includes:
+  - \usepackage{amsmath}
+  - \makeatletter
+  - \preto{\@verbatim}{\topsep=-10pt \partopsep=4pt }
+  - \makeatother
+tables: true
+urlcolor: blue
+editor_options: 
+  chunk_output_type: console
+---
+
+\tableofcontents
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DBI)
+library(RMySQL)
+library(tidyverse)
+con = dbConnect(RMySQL::MySQL(),
+                dbname='sakila',
+                host='localhost',
+                user='root',
+                password='mysql_root')
+```
+
+# Databases and SQL
+
+## Intro to Database Design
+
+In many businesses and government agencies, data files are not directly accessible. Instead, data are stored in databases that are usually in the cloud. 
+The most common type of database is a *relational database*. These types of databases are made up of **tables**, which are very similar to data frames in **R**. These tables usually have at least one variable in common with at least one other table that can be used to connect them. 
+
+## Relational Database Example
+
+\begin{center}
+\includegraphics[width=4.5in]{sql_figs/sakila.png}
+\end{center}
+
+## SQL Intro
+
+The most common way to access information stored in relational databases is with SQL.
+
+SQL stands for \underline{structured query language} and is ubiquitous in business, government, and academia where large data sets are used. SQL is usually either pronounced like "sequel" or the letters are individually said "S-Q-L". 
+
+We are going to go over the common SQL commands and then look at how to access SQL databases and use SQL within **R**.
+
+SQL is one of the most basic "coding languages" there is because of how similar the statements are to spoken English.
+
+## `SELECT`, `FROM`, and `WHERE` Statements
+
+The backbone of SQL are the `SELECT`, `FROM`, and `WHERE` statements.
+
+* `SELECT` is very much like the `select()` function in the tidyverse (`dplyr` package). It selects the columns or variables from the database. You can use "*" to select all columns.
+
+* `FROM` is the statement that specifies the table in the database from which we are taking the data.
+
+* `WHERE` is similar to the `filter()` function in the tidyverse. This will subset the table based on some criterion or criteria. 
+
+Note: these words do not *need* to be written in all capital letters, but it is the convention to type them in all caps for readability. 
+
+## SQL Syntax
+
+The basic syntax for SQL statements is as follows:
+
+```{sql eval = F, echo = T}
+SELECT column1, column2, ...
+FROM table_name
+WHERE condition;
+```
+
+
+
+
+## SQL Example
+
+Suppose we have a database named `sakila` that models a DVD rental store, featuring things like films, actors, film-actor relationships. In this database are many tables, one of which is "film". Here is some information about the film table:
+
+\vspace{-.2in}
+\phantom{.}\hspace{2.5in}\includegraphics[width=1.9in]{sql_figs/sakila_film.pdf}
+\vspace{-2.1in}
+
+Let's run some SQL queries with\
+this table.
+
+\vspace{2in}
+\phantom{.}
+
+## SQL Query 1
+
+```{sql connection=con, echo = T, max.print = 5, tab.cap = "My Caption", output.var = "pg_movies", eval = T}
+SELECT title, release_year, rating
+FROM film
+WHERE rating = 'PG';
+```
+```{sql connection=con, echo = F, max.print = 5, tab.cap = "My Caption"}
+SELECT title, release_year, rating 
+FROM film
+WHERE rating = 'PG';
+```
+
+## WHERE Statement Commands
+
+The following can be used in a `WHERE` statement:
+
+\begin{table}
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+Operator & Description\\
+\hline
+$=$ & Equal\\
+$>$ & Greater than\\
+$<$ & Less than\\
+$>=$ & Greater than or equal\\
+$<=$ & Less than or equal\\
+$<>$ or $!=$ & Not equal\\
+AND & Restricts the output based on another criterion.\\
+OR & Expands the output based on another criterion.\\
+NOT & Gives the opposite of the criterion.\\
+BETWEEN & Between a certain range.\\
+IN & To specify multiple possible values for a column.\\
+LIKE & Search for a pattern.\\
+\hline
+\end{tabular}
+\end{table}
+
+## SQL Query 2: BETWEEN
+
+The syntax for the `BETWEEN` statement is
+```{sql connection=con, echo = T, eval = F, max.print = 5}
+WHERE column_name BETWEEN value1 AND value2
+```
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT film_id, title, length, rental_duration
+FROM film
+WHERE film_id BETWEEN 13 AND 14 
+  OR film_id BETWEEN 21 AND 23;
+```
+
+## SQL Query 3: IN
+The `IN` operator is a shorthand for multiple `OR` conditions.
+
+```{sql connection=con, echo = T, max.print = 4}
+SELECT film_id, title, length, rental_duration
+FROM film
+WHERE film_id IN ("1", "50", "100", "613");
+```
+
+Note: the quotes aren't needed for numbers, but can still be used.
+
+## SQL Query 4: LIKE
+There are two wildcards often used in conjunction with the `LIKE` operator:
+
+* The percent sign `%` represents zero, one, or multiple characters.
+* The underscore sign `_` represents one single character. This can be repeated to stand for multiple characters. 
+
+```{sql connection=con, echo = T, max.print = 4}
+SELECT film_id, title, length, rental_duration
+FROM film
+WHERE title LIKE "b%" AND length >= 175;
+```
+
+## SQL Query 5: LIKE
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT film_id, title, length, rental_duration
+FROM film
+WHERE title LIKE "__ab%";
+```
+
+## More on SELECT Statments
+
+In the `SELECT` statement, instead of simply putting column names, we can also use the following functions:
+
+* `MIN()` returns the minimum value of a numeric column.
+* `MAX()` returns the maximum value of a numeric column.
+* `COUNT()` returns the number of rows that matches a specified criterion.
+* `SUM()` returns the total sum of a numeric column.
+* `AVG()` returns the average value of a numeric column.
+
+Additionally, we can use aliases to rename columns with the `AS` statement.
+
+## SQL Query 6: SELECT Functions
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT AVG(length) AS "Average Length"
+FROM film;
+```
+
+
+## SQL Query 7: SELECT Functions
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT COUNT(title) AS "Number of A or B Movies"
+FROM film
+WHERE title LIKE "a%" OR title LIKE "b%";
+```
+
+## SQL Query 8: SELECT Functions
+
+The following will return all the films with a length higher than the average length.
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT title, length
+FROM film
+WHERE length > (SELECT AVG(length) FROM film);
+```
+
+## ORDER BY Statement 
+
+We can also use the `ORDER BY` statement to change the order in which the data table is given.
+
+The syntax for `ORDER BY` is 
+```{sql connection=con, echo = T, eval = F, max.print = 5}
+ORDER BY column1, column2, .. columnN
+```
+
+We can put a a `ASC` for ascending or `DESC` for descending values after any one of the columns we are ordering by. 
+
+## SQL Query 9: ORDER BY Statement
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT title, length
+FROM film
+WHERE length > (SELECT AVG(length) FROM film)
+ORDER BY length ASC, title DESC;
+```
+
+
+## GROUP BY Statement 
+
+The `GROUP BY` statement groups rows that have the same values into summary rows. It is often used with aggregate functions (`COUNT()`, `MAX()`, `MIN()`, `SUM()`, `AVG()`) to group the result-set by one or more columns.
+
+Syntax:
+```{sql eval = F, echo = T}
+SELECT column_name(s)
+FROM table_name
+WHERE condition
+GROUP BY column_name(s)
+ORDER BY column_name(s);
+```
+
+## SQL Query 10: GROUP BY Statement
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT AVG(length), rating
+FROM film
+WHERE release_year = 2006
+GROUP BY rating
+ORDER BY rating;
+```
+
+## SELECT DISTINCT Statement
+
+The `SELECT DISTINCT` statement is used to return only distinct (different) values.
+
+Syntax:
+```{sql connection=con, eval = F, echo = T, max.print = 5}
+SELECT DISTINCT column1, column2, ...
+FROM table_name;
+```
+
+## SQL Query 11: DISTINCT Statement
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT DISTINCT release_year
+FROM film;
+```
+
+So this database only has films from the year 2006.
+
+
+## UNION Statement
+
+The `UNION` operator is used to combine the result-set of two or more `SELECT` statements.
+
+Syntax:
+```{sql eval = F, echo = T}
+SELECT column_name(s) FROM table1
+UNION
+SELECT column_name(s) FROM table2;
+```
+
+## SQL Query 12: UNION Statement
+
+```{sql connection=con, echo = T, max.print = 5}
+SELECT AVG(length) AS "Average Length and Payment Amount"
+FROM film
+UNION 
+SELECT AVG(amount)
+FROM payment;
+```
+
+## JOIN Statements
+
+A `JOIN` clause is used to combine rows from two or more tables, based on a related column between them. There are four types of `JOIN` statements:
+
+* `(INNER) JOIN`: Returns records that have matching values in both tables.
+* `LEFT (OUTER) JOIN`: Returns all records from the left table, and the matched records from the right table. 
+
+\begin{center}
+\includegraphics[width = 1.5in]{sql_figs/inner_join.png}
+\includegraphics[width = 1.5in]{sql_figs/left_join.png}
+\end{center}
+
+## JOIN Statements
+
+* `RIGHT (OUTER) JOIN`: Returns all records from the right table, and the matched records from the left table.
+* `FULL (OUTER) JOIN`: Returns all records when there is a match in either left or right table.
+
+\begin{center}
+\includegraphics[width = 1.5in]{sql_figs/right_join.png}
+\includegraphics[width = 1.5in]{sql_figs/full_outer_join.png}
+\end{center}
+
+## JOIN Statements
+
+The syntax for JOIN statements is as follows:
+
+```{sql, echo = T, eval = F}
+SELECT column_name(s)
+FROM table1
+(JOIN STATEMENT) table2
+  ON table1.column_name = table2.column_name;
+```
+
+Replace the `(JOIN STATEMENT)` with `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, or `FULL JOIN`.
+
+You can select columns from either table, so it is common to denote which table we are selecting from by using `table.column_name`.
+
+## JOIN Examples
+
+Consider the following two tables called Student and StudentCourse, respectively. 
+
+\includegraphics[width = 2.86in]{sql_figs/join_ex_tab1.png}
+\includegraphics[width = 1.63in]{sql_figs/join_ex_tab2.png}
+
+## JOIN Example: INNER JOIN 
+
+```{sql connection=con, echo = T, eval = F}
+SELECT StudentCourse.COURSE_ID, Student.NAME, Student.AGE 
+FROM Student
+INNER JOIN StudentCourse
+  ON Student.ROLL_NO = StudentCourse.ROLL_NO;
+```
+\includegraphics[width = 3in]{sql_figs/join_ex_innerjoin.png}
+
+## JOIN Example: LEFT JOIN 
+
+```{sql connection=con, echo = T, eval = F}
+SELECT Student.NAME, StudentCourse.COURSE_ID 
+FROM Student
+LEFT JOIN StudentCourse 
+ON StudentCourse.ROLL_NO = Student.ROLL_NO;
+```
+\includegraphics[width = 2.5in]{sql_figs/join_ex_leftjoin.png}
+
+## JOIN Example: RIGHT JOIN 
+
+```{sql connection=con, echo = T, eval = F}
+SELECT Student.NAME,StudentCourse.COURSE_ID 
+FROM Student
+RIGHT JOIN StudentCourse 
+ON StudentCourse.ROLL_NO = Student.ROLL_NO;
+```
+\includegraphics[width = 2.5in]{sql_figs/join_ex_rightjoin.png}
+
+## JOIN Example: FULL JOIN 
+
+```{sql connection=con, echo = T, eval = F}
+SELECT Student.NAME,StudentCourse.COURSE_ID 
+FROM Student
+FULL JOIN StudentCourse 
+ON StudentCourse.ROLL_NO = Student.ROLL_NO;
+```
+\includegraphics[width = 1.9in]{sql_figs/join_ex_fulljoin.png}
+
+# SQL in R Markdown
+
+## SQL in R Markdown
+
+In R Markdown, you can insert an SQL code chunk. 
+
+````{verbatim, echo = T}
+```{sql connection=}
+```
+````
+We will need to establish a connection before using it, though. This connection must be to a database, either remote or local. 
+
+## Define an SQL Connection in **R**
+
+To connect to a remote database, we can use the following code chunk in R Markdown. We will need a few SQL and database packages, though. Some common ones are `DBI`, `RMySQL`, and `RSQL`, and `RSQLite`. This database is a MySQL database, so we will need `RMySQL`. 
+
+````{verbatim, echo = T}
+```{r, echo = T, eval = T}
+library(DBI)
+library(RMySQL)
+con <- dbConnect(RMySQL::MySQL(),
+                 dbname = "sakila",
+                 host = "relational.fit.cvut.cz",
+                 port = 3306,
+                 user = "guest",
+                 password = "relational")
+```
+````
+
+
+## Define an SQL Connection in **R** 
+
+Note: this website for the sakilla database has since gone down since these notes were created. A remote database I found that is still up (as of January 31, 2024) can be accessed using the code on the following slide:
+
+````{verbatim, echo = T}
+```{r, echo = T, eval = T}
+con = dbConnect(RMySQL::MySQL(),
+                dbname='Rfam',
+                host='mysql-rfam-public.ebi.ac.uk',
+                port=4497,
+                user='rfamro',
+                password='')
+```
+````
+The following slides will still use the sakila database as an example.
+
+
+## Define an SQL Connection in **R**
+
+Then we can use that connection in our SQL code chunk. 
+
+````{verbatim, echo = T}
+```{sql connection = con, echo = T, eval = T, max.print = 5}
+SELECT title, release_year, rating
+FROM film
+WHERE rating = 'PG';
+```
+````
+
+```{sql connection = con, echo = F, eval = T, max.print = 5}
+SELECT title, release_year, rating
+FROM film
+WHERE rating = 'PG';
+```
+
+## Creating a Data Frame in **R** from SQL
+
+Instead of printing the table, we can store the table we created from our SQL command as a data frame using the `output.var` argument in the SQL code chunk:
+
+````{verbatim, echo = T}
+```{sql connection = con, output.var = "pg_movies"}
+SELECT title, release_year, rating
+FROM film
+WHERE rating = 'PG';
+```
+````
+
+
+## Using SQL Table in **R**
+Now we can access the `pg_movies` variable in **R**.
+```{r, echo = T}
+pg_movies <- tibble(pg_movies)
+head(pg_movies, 5)
+dim(pg_movies)
+```
+
+## Using Tidyverse Functions
+
+The same thing can be accomplished if we had read in the film table as a data frame or tibble. 
+```{r, echo = T, eval = F}
+movies <- read.csv("film.csv")
+pg_movies <- movies |>
+  filter(rating == "PG") |>
+  select(title, release_year, rating) |> tibble()
+head(pg_movies, 5)
+```
+```{r, echo = F, eval = T}
+movies <- read.csv(paste0("~/My Drive/Math 3190 - Fundamentals of Data Science",
+"/Data/Sakila DB Data/film.csv"))
+pg_movies <- movies |>
+  filter(rating == "PG") |>
+  select(title, release_year, rating) |> tibble()
+head(pg_movies, 5)
+```
+
+## Using Tidyverse Functions
+
+The following statements and functions are equivalent:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+SQL & {\bf R} Tidyverse\\
+\hline
+SELECT & select()\\
+WHERE & filter()\\
+ORDER BY & arrange()\\
+GROUP BY & group\_by()\\
+INNER JOIN & inner\_join()\\
+LEFT JOIN & left\_join()\\
+RIGHT JOIN & right\_join()\\
+FULL (OUTER) JOIN & full\_join()\\
+\hline
+\end{tabular}
+\end{center}
+
+
+## Using **R** Objects in SQL Chunks
+
+If you need to use the values of an **R** variables into SQL queries, you can do so by prefacing **R** variable references with a ?. For example:
+````{verbatim, echo = T}
+```{r}
+movie_length = 130
+```
+
+```{sql, connection=con, max.print = 5}
+SELECT title, length
+FROM film 
+WHERE length >= ?movie_length
+```
+````
+
+## Using **R** Objects in SQL Chunks
+
+```{r, echo = F, eval = T}
+movie_length = 130
+```
+```{sql, connection=con, echo = F, eval = T, max.print = 5}
+SELECT title, length
+FROM film 
+WHERE length >= ?movie_length
+```
+
+## Close Session
+
+When we are finished with connecting to the database, it is best to close the connection using the following line:
+
+```{r, echo = T, eval = T}
+dbDisconnect(con) # Disconnects from server.
+```
+
+
+## Other SQL Uses
+
+There are lots of other things we can do using SQL. We can create tables, create databases, drop tables, insert rows and columns into tables, and more.
+
+For this class, however, we will leave it there since most of the time, we will simply be accessing databases for data analysis rather than editing them. 
+
+
+# Local Databases
+
+## Simulating SQL Database with Local Files in Memory
+
+To simulate a connection to a database, we can use the following:
+
+\footnotesize
+```{r establish memory db, eval = T, echo = T}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+sakila_files <- list.files(paste0("~/My Drive/Math 3190 - Fundamentals ",
+                                  "of Data Science/Data/Sakila DB Data"))
+for (file in sakila_files) {
+  data_file <- read.csv(paste0("~/My Drive/Math 3190 - Fundamentals ",
+                               "of Data Science/Data/Sakila DB Data/", 
+                               file))
+  # Add data frame as a table                             
+  dbWriteTable(con, substr(file, 1, nchar(file) - 4), data_file) 
+  rm(data_file)
+}
+dbListTables(con)
+```
+\vspace{.05in}
+
+\normalsize
+These tables are not stored in **R**'s memory, though! 
+
+## Simulating SQL Database with Local Files
+
+```{sql connection=con, max.print = 5}
+SELECT title, length
+FROM film
+WHERE length > (SELECT AVG(length) FROM film);
+```
+
+## Connect to Local Data Databases
+
+If we have an SQL-type file (like one that ends in `.sqlite`), then we can connect to it without reading it into **R**'s memory. 
+
+For example, I have a database called "portal_mammals.sqlite" (downloadable from [here](https://ndownloader.figshare.com/files/2292171)). If it is in my working directory, I can connect to this database using\
+\
+
+<!-- Tutorial link using this database: https://datacarpentry.org/R-ecology-lesson/05-r-and-databases.html -->
+
+```{r mammals1}
+mammals_con <- DBI::dbConnect(RSQLite::SQLite(), 
+                              "portal_mammals.sqlite")
+DBI::dbListTables(mammals_con) # List all database tables
+```
+
+## Connect to Local Data Databases
+
+Then I can run SQL queries using the `dbGetQuery()` function:
+```{r, eval = T, echo = T}
+dbGetQuery(mammals_con, "SELECT * FROM surveys;") |> head()
+```
+
+or I can connect to the database in R Markdown using
+````{verbatim, echo = T}
+```{sql connection=mammals_con, max.print = 5}
+
+```
+````
+
+## Connect to Local Data Databases
+
+Select from December 2000:
+```{sql connection=mammals_con, max.print = 5}
+SELECT record_id, month, day, year, species_id, sex, weight
+FROM surveys
+WHERE month = 12 AND year = 2000;
+```
+
+
+## Create a Local Database
+
+We can create a .sqlite file from a .csv using the `csv_to_sqlite()` function from the `inborutils` package. This is not available on the CRAN, but can be installed using `devtools::install_github("inbo/inborutils")`. 
+
+This function reads a csv in smaller chucks (50,000 lines at a time by default) and writes it to a .sqlite file so we can connect to it as a database. 
+
+Example:
+\vspace{-.05in}
+```{r, eval = F, echo = T}
+library(inborutils)
+csv_to_sqlite(csv_file = "combined.csv",
+              sqlite_file = "combined.sqlite", 
+              table_name = "combined")
+              
+combined_con <- DBI::dbConnect(RSQLite::SQLite(), 
+                               "combined.sqlite")
+dbGetQuery(combined_con, "SELECT * FROM combined") |> head()
+```
+
+
+## Create a Local Database
+
+```{r, eval = T, echo = F, message = F}
+options(width = 60)
+library(inborutils)
+csv_to_sqlite(csv_file = "~/My Drive/Math 3190 - Fundamentals of Data Science/Spring 2024/GitHub/data_raw/combined.csv",
+              sqlite_file = "~/My Drive/Math 3190 - Fundamentals of Data Science/Spring 2024/GitHub/data_raw/combined.sqlite", 
+              table_name = "combined")
+              
+combined_con <- DBI::dbConnect(RSQLite::SQLite(), "~/My Drive/Math 3190 - Fundamentals of Data Science/Spring 2024/GitHub/data_raw/combined.sqlite")
+dbGetQuery(combined_con, "SELECT * FROM combined") |> head()
+```
+
+
+## Create a Local Database
+
+You can add another table to the same .sqlite file using `csv_to_sqlite()` as long as a different table name is specified.
+
+```{r, eval = F, echo = T, message = F}
+csv_to_sqlite(csv_file = "actor.csv",
+              sqlite_file = "sakila.sqlite", 
+              table_name = "actor")
+csv_to_sqlite(csv_file = "film.csv",
+              sqlite_file = "sakila.sqlite", 
+              table_name = "film")
+```
+
+The above code will create the `sakila.sqlite` file in the first function call with the table "actor". The second function call will then add the "film" table to that same file.
+
+
+## Convert from dplyr Functions to SQL
+
+The `dbplyr` package is an add-on to the `dplyr` package that allows you to use remote database tables as if they are in-memory data frames by automatically converting dplyr code into SQL. We can install it in the normal way: `install.packages("dbplyr")`. If you don't install it, you will be prompted to when you do something that requires it. 
+
+Example:
+
+\small
+```{r}
+# Access the SQL table "surveys" from the mammals_con connection
+mammal_surveys <- tbl(mammals_con, "surveys")
+mammal_surveys
+```
+
+
+## Convert from dplyr Functions to SQL
+
+```{r}
+mammal_summary <- mammal_surveys |>
+  filter(month == 7 & year == 1992) |>
+  group_by(species_id) |>
+  summarize(avg_weight = mean(weight, na.rm = TRUE)) |>
+  arrange(desc(avg_weight))
+head(mammal_summary)
+```
+
+
+## Convert from dplyr Functions to SQL
+
+The `show_query()` function will show an SQL query that will accomplish the same thing the `dplyr` functions did to create the object. Sometimes these queries look a bit strange, but they work! 
+
+```{r}
+show_query(mammal_summary)
+```
+
+
+## Same thing with SQL
+
+```{sql connection=mammals_con}
+SELECT `species_id`, AVG(`weight`) AS `avg_weight`
+FROM (
+  SELECT `surveys`.*
+  FROM `surveys`
+  WHERE (`month` = 7.0 AND `year` = 1992.0)
+) AS `q01`
+GROUP BY `species_id`
+ORDER BY `avg_weight` DESC
+```
+
+## Object Sizes
+
+What is especially amazing about this is even though we are working with an object called `mammal_surveys`, it is actually not read into memory. We can see that here using the `obj_size()` function in the `lobstr` package:
+
+```{r object_size}
+lobstr::obj_size(mammal_surveys)
+# collect function brings the object into memory
+mammal_surveys2 <- collect(mammal_surveys) 
+lobstr::obj_size(mammal_surveys2)
+```
+\vspace{.1in}
+
+So, being an **R** wizard also makes you an SQL wizard (by proxy)! 
+
+
+## Close Connection
+
+As always, we should not forget to disconnect when we are done.
+```{r mammals_close, eval = T}
+dbDisconnect(con)
+dbDisconnect(combined_con)
+dbDisconnect(mammals_con)
+```
+
+## Conclusion
+
+* Knowing SQL is a great skill to not only access databases remotely, but also to be able to work with large files locally without reading them into **R**. 
+
+* Even though tools exist to convert **R** code to SQL queries, it is still important to know both to be able to handle working with any database or data set.
+
+
+## Session info
+
+\tiny
+
+```{r session info}
+sessionInfo()
+```
