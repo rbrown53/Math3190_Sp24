@@ -158,5 +158,5 @@ Create a plot that looks as similar as possible to the one in the image below. N
 ![](airlines.png){width=80%}
 
 ### Part c
-Now, instead of plotting all six airlines on the same plot, use `facet_grid()` to graph six plots (one for each airline) side-by-side. Be sure to put `labeler = label_both` in the `facet_grid()` function so it is more readable. 
+Now, instead of plotting all six airlines on the same plot, use `facet_grid()` to graph six plots (one for each airline) side-by-side. Be sure to put `labeller = label_both` in the `facet_grid()` function so it is more readable. 
 
