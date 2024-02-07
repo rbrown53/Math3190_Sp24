@@ -277,7 +277,7 @@ ui <- fluidPage(
   sliderInput(inputId = "num",
     label = "Choose a number",
     value = 25, min = 1, max = 100), # Comma! 
-    plotOutput("hist")
+  plotOutput("hist")
   )
 server <- function(input, output) {
   output$hist <- renderPlot({
@@ -334,7 +334,7 @@ ui <- fluidPage(
   sliderInput(inputId = "num",
     label = "Choose a number",
     value = 25, min = 1, max = 100), # Comma! 
-    plotlyOutput("hist") # Note: changed from plotOutput to plotlyOutput
+  plotlyOutput("hist") # Note: changed from plotOutput to plotlyOutput
   )
 server <- function(input, output) {
   output$hist <- renderPlotly({ # Note: changed to renderPlotly
