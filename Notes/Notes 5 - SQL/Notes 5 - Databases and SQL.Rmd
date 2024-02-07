@@ -26,10 +26,15 @@ library(DBI)
 library(RMySQL)
 library(tidyverse)
 con = dbConnect(RMySQL::MySQL(),
-                dbname='sakila',
-                host='localhost',
-                user='root',
-                password='mysql_root')
+               dbname='sakila',
+               host='localhost',
+               user='root',
+               password='mysql_root')
+con <- DBI::dbConnect(RSQLite::SQLite(),
+                      dbname=paste0("~/My Drive/Math 3190 - Fundamentals ",
+                                    "of Data Science/Spring 2024/GitHub",
+                                    "/Math3190_Sp24/Data/sakila.sqlite")
+                      )
 ```
 
 # Databases and SQL
