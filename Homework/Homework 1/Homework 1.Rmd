@@ -1,7 +1,7 @@
 ---
 title: "MATH 3190 Homework 1"
 author: "Focus: Notes 1-3"
-date: "Due February 9, 2024"
+date: "Due February 10, 2024"
 output: pdf_document
 urlcolor: blue
 ---
@@ -56,10 +56,10 @@ Use `summarize()` to extract SUU's win/loss record and winning percentage for th
 Generalize this by writing a function that will do this for a given team, and create a tibble with this information for all teams. Arrange this tibble by winning percentage (descending). The `add_row()` function may be useful here.
 
 ### Part k (8 points)
-Write two function that generate appropriate graph for the basketball data. These two graphs could be anything you'd like and should use `ggplot2` and they show something meaningful. 
+Write two functions that generate appropriate graphs for the basketball data. These two graphs could be anything you'd like and should use `ggplot2` and they should show something meaningful. 
 
 ### Part l (12 points)
-Create an **R** package that contains your functions from Parts g, i, and j and your tibble that contains all the games from 2023. You can use the the `write_csv()` function to save your tibble as a .csv file and put it in a `data-raw` folder in your package. Make sure the functions are properly documented. Upload this package to your GitHub page and indicate here what you called this package.
+Create an **R** package that contains your functions from Parts h, j, and k and your tibble that contains all the games from 2023. You can use the the `write_csv()` function to save your tibble as a .csv file and put it in a `data-raw` folder in your package. Make sure the functions are properly documented. Upload this package to your GitHub page and indicate here what you called this package.
 
 
 # Problem 3 (15 points)
