@@ -59,7 +59,7 @@ Generalize this by writing a function that will do this for a given team, and cr
 Write two functions that generate appropriate graphs for the basketball data. These two graphs could be anything you'd like and should use `ggplot2` and they should show something meaningful. 
 
 ### Part l (12 points)
-Create an **R** package that contains your functions from Parts h, j, and k and your tibble that contains all the games from 2023. You can use the the `write_csv()` function to save your tibble as a .csv file and put it in a `data-raw` folder in your package. Make sure the functions are properly documented. Upload this package to your GitHub page and indicate here what you called this package.
+Create an **R** package that contains your functions from Parts h, j, and k and your tibble that contains all the games from 2023. You can use the the `write_csv()` function to save your tibble as a .csv file and put it in a `data-raw` folder in your package. Make sure the functions and the data set are properly documented and that the data file gets loaded in when you load your package. We did that in Lab 2 with the `brain_body` dataset in case you need a reminder of how that works. Upload this package to your GitHub page and indicate here what you called this package.
 
 
 # Problem 3 (15 points)
