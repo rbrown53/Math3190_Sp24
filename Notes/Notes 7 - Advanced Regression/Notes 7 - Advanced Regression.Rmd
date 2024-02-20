@@ -152,7 +152,7 @@ observation. We will define a vector of weights as
 $\boldsymbol{w}=[w_1, w_2, \dots, w_n]^T$ and a matrix of the weights as
 $$
 \mathbf{W}=\begin{bmatrix}
-w_1 & 0  \dots & 0\\
+w_1 & 0 &  \dots & 0\\
 0 & w_2  & \dots & 0\\
 \vdots & \vdots &  \ddots & \vdots\\
 0 & 0 & \dots & w_n
@@ -207,7 +207,7 @@ Also note the following things about WLS:
 2.  Externally studentized (jackknife) residuals take into account the
     weights, so they should be used in residual plots for model
     diagnostics.
-3.  For QQ plots, use the unstudentized residuals. Either the raw of
+3.  For QQ plots, use the unstudentized residuals. Either the raw or
     standardized are fine.
 
 ## WLS - Weighted Fit
