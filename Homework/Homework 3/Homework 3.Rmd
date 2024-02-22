@@ -1,7 +1,7 @@
 ---
 title: "MATH 3190 Homework 3"
 author: "Focus: Notes 6"
-date: "Due February 24, 2024"
+date: "Due March 4, 2024"
 output: pdf_document
 header-includes:
    - \usepackage{multirow}
