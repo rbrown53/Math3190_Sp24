@@ -1,0 +1,204 @@
+---
+title: "MATH 3190 Homework 4"
+author: "Focus: Notes 7 Part 1"
+date: "Due March 9, 2024"
+output: pdf_document
+header-includes:
+   - \usepackage{multirow}
+editor_options: 
+  chunk_output_type: console
+urlcolor: blue
+---
+
+Your homework should be completed in R Markdown or Quarto and Knitted to an html or pdf document. You will ``turn in" this homework by uploading to your GitHub Math_3190_Assignment repository in the Homework directory.
+
+
+# Problem 1 (55 points)
+
+Concrete is the most important material in civil engineering. The concrete compressive strength is an important attribute of the concrete and our goal is to predict the concrete compressive strength (in MPa) from the following variables:
+
+* Cement (in $\text{kg}/\text{m}^3$)
+* Blast furnace slag (in $\text{kg}/\text{m}^3$)
+* Fly ash (in $\text{kg}/\text{m}^3$)
+* Water (in $\text{kg}/\text{m}^3$)
+* Superplasticizer (in $\text{kg}/\text{m}^3$)
+* Coarse aggregate (in $\text{kg}/\text{m}^3$)
+* Fine aggregate (in $\text{kg}/\text{m}^3$)
+* Age of concrete (in days)
+
+This dataset came from the [UCI ML Repository](https://archive.ics.uci.edu/dataset/165/concrete+compressive+strength) and can be found on the Math3190_Sp24 GitHub page along with a Readme file.
+
+### Part a (3 points)
+Read in the dataset. The data file is a .xls file, so you'll need to either convert it to a .csv or, preferably, use the `readxl` package to read in the Excel file. Once it is read in, change the names of the variables so they are shorter yet still descriptive. 
+
+
+### Part b (5 points)
+In the `GGally` library is the function `ggpairs`, which makes a nice scatterplot matrix in the `ggplot2` style. Create this scatterplot matrix for all of the variables in the dataset (they should all be plotted together in one plot). 
+
+Comment on the scatterplot matrix. Which variables seem to have a (at least somewhat) linear relationship with compressive strength? Does it seem like multicollinearity will be an issue here? Does it seem like the transformation of at least one variable is appropriate? There should be one (fairly) obvious variable that needs to be transformed.
+
+
+### Part c (8 points)
+Fit a linear model (with the `lm()` function) predicting compressive strength using all other variables and include any transformations you thought were appropriate in part b. 
+
+Using `ggplot()`, make a QQ plot of the raw residuals. Include the QQ line as well. Comment on whether the residuals appear to be approximately normal.
+
+Using `ggplot()`, make a plot of the jackknife residuals (obtained using the `rstudent()` function) on the y-axis and the fitted values of the model on the x-axis. Comment on whether this residual plot looks good. If it does not, indicate what the problem(s) is (are).
+
+
+### Part d (6 points)
+Let's do some model selection to determine if any variables should be dropped from the model. 
+
+First, use the `step()` function on the model you fit in the previous part. This will select the variables using AIC. 
+
+Second, use `step()` with the option `k` equal to the log of the sample size. This will select the variables using BIC.
+
+Third, use the `cv.glmnet()` function in the `glmnet` library (set a seed first) to fit a LASSO for variable selection. Note, the `model.matrix()` function will be helpful here to get a matrix to input for the `x` argument in the `cv.glmnet()` function. Use the "lambda.1se" value to select the variables and using that $\lambda$ value, fit the LASSO model using `glmnet()`. 
+
+Finally, compare the variables that were selected by the three methods. 
+
+
+### Part e (4 points)
+Using the variables selected by the method that reduced the number of variables the most, fit a new ordinary least squares (OLS) model for predicting compressive strength using the `lm()` function.
+
+Using `ggplot()`, make a QQ plot of the raw residuals. Include the QQ line as well. Comment on whether the residuals appear to be approximately normal and whether this plot looks better than the QQ plot in part c.
+
+Using `ggplot()`, make a plot of the jackknife residuals (obtained using the `rstudent()` function) on the y-axis and the fitted values of the model on the x-axis. Comment on whether this residual plot looks good and whether this plot looks better than the residual plot in part c. If it does not, indicate what the problem(s) is (are).
+
+
+### Part f (10 points)
+Since the residual plot still does not look good, let's try to use weighted least squares. Following slides 12-14 of Notes 7, create a vector of weights and then fit a model using weighted least squares. 
+
+Using `ggplot()`, make a plot of the jackknife residuals (obtained using the `rstudent()` function) on the y-axis and the fitted values of the weighted model on the x-axis. Comment on whether this residual plot looks good and whether this plot looks better than the residual plot in part e.
+
+
+### Part g (9 points)
+Using the unweighted model from part e and the weighted model from part f, find and report both a confidence interval for the mean compressive strength and a prediction interval for the specific compressive strength for concrete that has a cement value of 300, a blast furnace slag of 90, a fly ash of 50, a water value of 200, a superplasticizer of 2.5, a coarse aggregate of 900, a fine aggregate of 600, and an age of 300 days. Note: some of those variables will not be used since you reduced the number of variables earlier. You can use the `predict()` function here and remember that you will need to find the specific weight for the given predictor variable values for the weighted intervals.
+
+Comment on how these intervals differ. Does the change make sense given the value of the fitted value?
+
+
+### Part h (10 points)
+Write a function called `predict_weighted` that takes three inputs: the **unweighted** model, the data frame containing the information about the value(s) of the predictor variables we are using to predict, and the interval type (either "confidence" or "prediction"). This function should return the predicted value and the interval bounds for the specified interval type for weighted least squares. So, this function should compute the weights, obtain the weighted least squares model, find the specific weight for the new value, and then get the prediction and the interval. This function should work for any model you give it, not just for this exact situation of this problem. So, you should not reference any data sets or variables specific to this concrete problem in the function.
+
+Test this new function for the confidence and prediction intervals you made in part g. 
+
+
+
+# Problem 2 (29 points)
+
+An automobile consulting company wants to understand the factors on which the pricing of cars depends. The dataset `car_price_prediction.csv` in the GitHub data folder has information on the sales of 4340 vehicles. 
+
+### Part a (3 points)
+Read in the data file and take the log of all numeric variables. Then fit a linear model for predicting the log of selling price using all other variables except "name".
+
+
+### Part b (4 points)
+Now fit some LASSO models for predicting log price using all but the "name" variable. Try the following values for the regularization parameter: $\lambda=0, 0.01, 0.1,$ and $1$ and comment on how the coefficients of the model change. 
+
+Note: when $\lambda=0$, the LASSO coefficients should equal the OLS model coefficients. However, they will actually be a bit off here. That is because the `glmnet()` function has a `thresh` argument that sets a threshold for convergence. It is, by default, set to `1e-07`. To make the parameters match, you can change that to `thresh = 1e-14` instead. This is not necessary, though. 
+
+
+### Part c (4 points)
+Now fit some ridge regression models for predicting log price using all but name. Try the following values for the regularization parameter: $\lambda=0, 0.01, 0.1,$ and $1$ and comment on how the coefficients of the model change. 
+
+
+### Part d (4 points)
+Now fit some elastic net regression models for predicting log price using all but name. Try the following values for the regularization parameter: $\lambda=0, 0.01, 0.1,$ and $1$ for $\alpha=1/3$ and then comment on how the coefficients of the model change for each $\alpha$. 
+
+
+### Part e (4 points)
+Use the `cv.glmnet()` to find the "optimal" $\lambda$ value for LASSO, ridge, and elastic net and then fit models using the `glmnet()` function for all three using their respective "best" $\lambda$. **Set a seed** before running the `cv.glmnet()` each time. 
+
+Compare each model's variables and coefficients. 
+
+
+### Part f (10 points)
+Use bootstrapping with at least 1000 samples to estimate the standard errors of the coefficients of the ridge regression model. For each bootstrap sample, run the `cv.glmnet()` function to find the best $\lambda$ and fit a model using that optimized $\lambda$. Use the "lambda.1se" for this. Then compare these bootstrapped standard errors to the standard errors for the OLS model you fit in part a. Are they larger or smaller? Does this make sense? 
+
+
+
+# Problem 3 (16 points)
+
+Sixty districts in California in 1990 were randomly selected. We want to predict the median house value for the district based on the district location (longitude and latitude), the median house age in the block group, the total number of rooms in the homes, the total number of bedrooms, the population in the district, the number of households, and the median income (in \$10,000). The data are already in the .Rmd file.
+
+```{r house_data, echo = F}
+library(tidyverse) |> suppressPackageStartupMessages()
+housing_train <- tibble(
+  house_value = c(156100, 145300, 150000, 50600, 176300, 178500, 123800,
+                  173900, 422700, 164400, 42100, 157800, 162900, 90500,
+                  191800, 128100, 109700, 206700, 132200, 248200, 336900,
+                  58000, 271500, 259500, 69400, 132700, 461200, 245000,
+                  218000, 311700, 361600, 250000, 113900, 103600, 81900,
+                  351900, 114100, 500001, 153300, 466700),
+  longitude = c(-121.08, -121.27, -117.7, -119.29, -118.09, -117.67, 
+                -120.76, -118.16, -118.39, -123.1, -117.66, -118.16, 
+                -120.98, -120.99, -122.69, -118.18, -122.27, -122.11, 
+                -121.99, -118.02, -118.02, -120.94, -118.6, -121.95, 
+                -120.62, -118.18, -122.13, -117.93, -121.85, -118.49, 
+                -122.44, -121.32, -117.07, -121.83, -121.43, -122.11, 
+                -118.27, -118.4, -120.28, -117.16),
+  latitude = c(38.95, 38.7, 34.06, 36.34, 33.9, 34.02, 38.47, 34.02,
+               33.89, 38.79, 35.63, 33.97, 38.99, 37.67, 38.35, 33.91,
+               37.83, 37.99, 38.34, 33.74, 33.73, 40.14, 34.26, 37.96, 
+               36.99, 33.8, 37.4, 33.94, 36.6, 34.18, 37.76, 37.67, 32.74, 
+               38, 38.53, 37.41, 34.01, 34.41, 37.9, 32.74),
+  age = c(18, 16, 25, 28, 33, 16, 17, 44, 38, 20, 33, 23, 17, 28, 16, 41, 
+          51, 16, 16, 26, 24, 31, 18, 18, 32, 42, 29, 30, 21, 31, 52, 21, 
+          38, 15, 36, 27, 47, 22, 17, 43),
+  rooms = c(1931, 3747, 2054, 1440, 3326, 3042, 1521, 1218, 1851, 3109, 
+            2579, 1516, 3403, 1768, 1689, 1260, 2665, 3913, 1470, 3842, 
+            6393, 3127, 6154, 2739, 2455, 2301, 6027, 2658, 2381, 3073, 
+            2959, 1494, 1901, 6365, 2430, 5110, 921, 4443, 1047, 1437),
+  bedrooms = c(380, 586, 609, 431, 720, 524, 309, 374, 332, 712, 564, 
+               457, 661, 423, 254, 299, 574, 710, 261, 609, 1141, 664, 
+               1070, 393, 508, 621, 1195, 382, 701, 674, 683, 271, 392, 
+               1646, 426, 1599, 264, 560, 212, 406),
+  population = c(1271, 1817, 2271, 2178, 2533, 1516, 607, 1175, 750, 1643,
+                 1155, 1977, 1540, 1066, 921, 1535, 1258, 1782, 748, 1961,
+                 2743, 1345, 3010, 1072, 1344, 2114, 2687, 1135, 1264, 1486,
+                 1145, 781, 1099, 3838, 1199, 2764, 881, 1573, 530, 692),
+  households = c(377, 590, 564, 440, 689, 475, 240, 342, 314, 638, 431, 435,
+                 622, 392, 270, 322, 536, 676, 256, 595, 1057, 580, 1034, 374,
+                 492, 561, 1171, 392, 659, 684, 666, 255, 406, 1458, 437,
+                 1482, 221, 496, 196, 379)
+)
+
+housing_test <- tibble(
+  house_value = c(214900, 44000, 194400, 128700, 435000, 179400, 129300,
+                  312300, 76300, 225800, 295500, 162500, 340800, 93800,
+                  155000, 283200, 133400, 248200, 265000, 57500),
+  longitude = c(-119.25, -121.93, -122.31, -121.27, -118.42, -118.71, 
+                -117.31, -122.04, -119.69, -117.88, -117.25, -121.48, 
+                -122.49, -121.49, -116.18, -119.19, -118.23, -118.35, 
+                -118.35, -124.15),
+  latitude = c(34.26, 41.86, 38.27, 38.67, 33.85, 34.27, 34.02, 37.04, 
+               36.79, 33.7, 32.8, 38.55, 37.74, 39.52, 33.69, 34.3, 33.89,
+               34.28, 33.91, 40.88),
+  age = c(30, 28, 34, 15, 43, 26, 18, 17, 15, 18, 26, 52, 48, 25, 17, 
+          25, 16, 30, 31, 33),
+  rooms = c(2948, 4225, 1748, 1701, 1584, 990, 1634, 4977, 2524, 2135, 
+            2442, 2037, 1186, 848, 89, 2197, 5003, 3214, 2583, 2235),
+  bedrooms = c(827, 835, 284, 346, 477, 223, 274, 994, 451, 373, 659, 
+               358, 213, 153, 19, 320, 1180, 513, 663, 506),
+  population = c(1635, 1908, 783, 723, 799, 719, 899, 1987, 1207, 1464, 
+                 1134, 811, 487, 436, 79, 934, 4145, 1700, 1675, 1165),
+  households = c(750, 686, 303, 352, 433, 232, 285, 947, 424, 405, 624, 
+                 375, 207, 155, 21, 330, 1159, 533, 612, 441)
+)
+```
+
+### Part a (2 points)
+Fit a linear regression model predicting salary from the other variables. 
+
+
+### Part b (4 points)
+Fit a ridge regression using `cv.glmnet()` to choose the optimal $\lambda$. Set the seed before using`cv.glmnet()`. 
+
+
+### Part c (6 points)
+Compute the sum of squared errors for both the OLS model and the ridge regression model for the testing set. Remember to use the exact models you fit to the training sets. The `predict()` functions will be useful here. Compare the results and comment on why the ridge regression performs better here. Slides 26-29 of Notes 7 may be helpful.
+
+
+### Part d (4 points)
+Use the `train()` function in the `caret()` package to find the optimal $\alpha, \lambda$ pair in this situation (using the training set and 5-fold cross validation). For $\lambda$, search for values between 0 and 10000 by 100. Then fit a model using the optimal $\alpha$ and $\lambda$ using `glmnet()` and compare the sum of squared errors using this optimized model to the two models in part c. Set a seed before running the `train()` function. 
