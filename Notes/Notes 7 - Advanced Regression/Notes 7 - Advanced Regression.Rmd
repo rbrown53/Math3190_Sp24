@@ -1636,10 +1636,10 @@ and plots. Each of the following are helpful:
 ```{r pois_resid, fig.width=3, fig.height=1.8, eval = T}
 p_resids <- residuals(lumber_mod, type = "pearson")
 resid_df <- data.frame(p_resids,
-                       fitted = lumber_mod$fitted.values)
-ggplot(resid_df, aes(x = fitted, y = p_resids)) +
+                       linear_pred = lumber_mod$linear.predictors)
+ggplot(resid_df, aes(x = linear_pred, y = p_resids)) +
   geom_point(size = 0.5) + 
-  labs(x = "Fitted Values", y = "Pearson Residuals")
+  labs(x = "Linear Predictors", y = "Pearson Residuals")
 ```
 
 ## Poisson Regression Diagnostics - QQ Plot
