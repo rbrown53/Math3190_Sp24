@@ -104,11 +104,11 @@ Now fit some ridge regression models for predicting log price using all but name
 
 
 ### Part d (4 points)
-Now fit some elastic net regression models for predicting log price using all but name. Try the following values for the regularization parameter: $\lambda=0, 0.01, 0.1,$ and $1$ for $\alpha=1/3$ and then comment on how the coefficients of the model change for each $\alpha$. 
+Now fit some elastic net regression models for predicting log price using all but name. Try the following values for the regularization parameter: $\lambda=0, 0.01, 0.1,$ and $1$ for $\alpha=1/3$ and then comment on how the coefficients of the model change for each $\alpha$ from parts b, c, and d. 
 
 
 ### Part e (4 points)
-Use the `cv.glmnet()` to find the "optimal" $\lambda$ value for LASSO, ridge, and elastic net and then fit models using the `glmnet()` function for all three using their respective "best" $\lambda$. **Set a seed** before running the `cv.glmnet()` each time. 
+Use the `cv.glmnet()` to find the "optimal" $\lambda$ value (let's use the "lambda.1se") for LASSO, ridge, and elastic net and then fit models using the `glmnet()` function for all three using their respective "best" $\lambda$. **Set a seed** before running the `cv.glmnet()` each time. 
 
 Compare each model's variables and coefficients. 
 
@@ -189,7 +189,7 @@ housing_test <- tibble(
 ```
 
 ### Part a (2 points)
-Fit a linear regression model predicting salary from the other variables. 
+Fit a linear regression model predicting house value from the other variables. 
 
 
 ### Part b (4 points)
@@ -201,4 +201,4 @@ Compute the sum of squared errors for both the OLS model and the ridge regressio
 
 
 ### Part d (4 points)
-Use the `train()` function in the `caret()` package to find the optimal $\alpha, \lambda$ pair in this situation (using the training set and 5-fold cross validation). For $\lambda$, search for values between 0 and 10000 by 100. Then fit a model using the optimal $\alpha$ and $\lambda$ using `glmnet()` and compare the sum of squared errors using this optimized model to the two models in part c. Set a seed before running the `train()` function. 
+Use the `train()` function in the `caret()` package to find the optimal $\alpha, \lambda$ pair in this situation (using the training set and 5-fold cross validation). For $\lambda$, search for values between 0 and 10000 by 100 and for $\alpha$, search for values between 0 and 1 by 0.05. Then fit a model using the optimal $\alpha$ and $\lambda$ using `glmnet()` and compare the sum of squared errors using this optimized model to the two models in part c. Set a seed before running the `train()` function. 
