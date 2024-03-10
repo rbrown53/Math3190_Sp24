@@ -27,5 +27,8 @@
 *synctex.gz
 */*synctex.gz
 */*/*synctex.gz
+*.out
+*/*.out
+*/*/*.out
 ## Hidden windows files
 ~*
