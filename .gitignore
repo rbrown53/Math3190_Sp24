@@ -24,5 +24,8 @@
 */*_files
 */*/*_cache
 */*/*_files
+*synctex.gz
+*/*synctex.gz
+*/*/*synctex.gz
 ## Hidden windows files
 ~*
