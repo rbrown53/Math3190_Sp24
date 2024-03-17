@@ -1,0 +1,778 @@
+---
+#title: "Notes 9 - Optimization"
+#author: |
+# date: "Math 3190"
+output: 
+ #beamer_presentation:
+ #  theme: CambridgeUS
+ pdf_document:
+    #toc: true
+    includes:
+      in_header: columns.tex
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{algorithm}
+  - \newcommand{\Ab}{{\mathbf A}}
+  - \newcommand{\xb}{\boldsymbol{x}}
+  - \newcommand{\bb}{\boldsymbol{b}}
+  - \newcommand{\R}{\mathbb{R}}
+  - \newcommand{\rb}{\boldsymbol{r}}
+  - \newcommand{\ub}{\boldsymbol{u}}
+  - \newcommand{\vb}{\boldsymbol{v}}
+  - \newcommand{\pb}{\boldsymbol{p}}
+  - \newcommand{\Ib}{{\mathbf I}}
+  - \makeatletter
+  - \preto{\@verbatim}{\topsep=-10pt \partopsep=4pt }
+  - \makeatother
+tables: true
+urlcolor: blue
+editor_options: 
+  chunk_output_type: console
+  markdown: 
+    wrap: 72
+fontsize: 11pt
+sansfont: Computer Modern
+---
+
+\begin{center} \fbox{\Large{\bf Notes 9: Optimization}} \end{center}
+
+\tableofcontents
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align="center")
+library(caret)
+library(tidyverse)
+img_path <- "svmFigs/"
+```
+
+
+# Intro
+
+Optimization problems come up quite frequently in statistics and data science problems. We have encountered some optimization problems already in this class in the form of maximum likelihood maximization and Bayesian estimation. 
+
+
+# Calculus Optimization Review
+
+One way to optimize a function is to do so directly using calculus. Suppose we want to optimize $f(x)$ by finding either a global maximum or minimum. The steps to do this include:
+
+1. Find $f'(x)$.
+2. Set $f'(x)$ and solve for $x$ to find the critical number(s). 
+3. Plug the critical number(s) and endpoint(s). If there are no endpoints, take a limit as $x$ approaches the end of the domain. 
+4. Take the $x$ value that maximizes or minimizes the function, if it exists.
+
+**Example 1**: If $f(x)=\dfrac{x}{x^2+1}$, find the value of $x$ that maximizes and minimizes the function. 
+
+\newpage
+
+\phantom{.}\vspace{2in}
+
+So, we can say that $\underset{x}{\text{argmax}}\left\{\dfrac{x}{x^2+1}\right\}$ is \hspace{.5in} and the $\underset{x}{\text{argmin}}\left\{\dfrac{x}{x^2+1}\right\}$ is \hspace{.5in}.
+
+
+**Example 2**: Now let's try to maximize this function: $g(x)=x^2+xe^x$.
+\vspace{1.5in}
+
+This function has a minimizer, but it is not possible to directly solve for it. We would need a numerical method to get an approximation for $x$. 
+
+# Newton's Method
+
+One fairly straight forward and powerful method for finding roots (or zeros) of a function is **Newton's Method**. This method is iterative, which means that it typically needs to be run multiple times with each iteration giving a better approximation of the root. 
+
+\begin{minipage}{.6\textwidth}
+The idea here is to first start with a simple guess of which $x$ is the root. Call this first guess $x_k$ (where $k=0$ for the initial guess). Then use a tangent line to the curve at $x=x_k$ that intercepts the $x$-axis at $x_{k+1}$ where $x_k$ is the $k$th iteration of $x$. \\
+
+Since any tangent line that does not have a slope of zero will intercept the $x$-axis somewhere, we will call the $x$ value were it does $x_{k+1}$. Then it will be true that $f'(x_k)=\dfrac{f(x_k)-0}{x_k-x_{k+1}}$. Then we can simply solving this for the $x_{k+1}$:
+
+\vspace{.4in}
+
+%Solve for x_{k+1}!
+
+
+\end{minipage}
+\begin{minipage}{.5\textwidth}
+\hspace{.3in}\includegraphics[width = 2.5in]{optim_figs/Newton_iteration_k.png}
+\end{minipage}
+
+\vspace{.4in}
+
+Therefore, we have 
+\begin{equation*}
+\phantom{x_{k+1}=x_k-\dfrac{f(x_k)}{f'(x_k)}}
+\end{equation*}
+
+**Example 3**: Trying this out for finding the root of $g'(x)=2x+e^x(x+1)$ from Example 2 above. First, let $f(x)=g'(x)$.
+\vspace{3.3in}
+
+To program this in **R**, it is common to use a tolerance for stopping. That is, if $x_{k+1}$ is very close to $x_k$, then we should stop. 
+
+:::::: {.cols data-latex=""}
+::: {.col data-latex="{0.45\textwidth}"}
+
+It only took 5 iterations to converge to within $10^{-10}$. If we wanted to make it even more precise, we could set the tolerance even lower, like `1e-16`. This would make $x_k$ and $x_{k+1}$ equal to 15 decimal places.\
+
+Now, notice that by finding the root of $f(x)$ in this example, we were really finding the critical number (the $x$ value where the derivative is zero) of $g(x)$ since $g'(x)=f(x)$. That means that the iteration sequence for finding the critical number of $g(x)$ is 
+\begin{equation*}
+\fbox{$\displaystyle x_{k+1}=x_k-\dfrac{g'(x_k)}{g''(x_k)}$}.
+\end{equation*}
+
+That gives us our first optimization method. This is sometimes referred to as **Newton's Method for Optimization**. 
+
+:::
+::: {.col data-latex="{0.05\textwidth}"}
+\phantom{.}\
+
+:::
+::: {.col data-latex="{0.53\textwidth}"}
+
+```{r newton_root}
+f <- function(x) {
+  2*x + exp(x)*(x+1)
+}
+f_prime <- function(x) {
+  2 + exp(x)*(x+1) + exp(x)
+}
+
+xk <- 0 # Initialize our first guess
+maxit <- 100 # Set a max iteration number 
+for(k in 1:maxit) {
+  xnew <- xk - f(xk)/f_prime(xk)
+  if(abs(xk - xnew) < 1e-10) {
+    break
+  }
+  xk <- xnew
+}
+xk # Estimate for the zero
+k  # Number of iterations to converge
+```
+
+:::
+::::::::::::::
+
+\vspace{.1in}
+
+**Example 4**: Find the $x$ values that minimizes $f(x)=x^4-3x^2+x$ using Newton's method. 
+
+```{r newtons_opt}
+f <- function(x) {
+  x^4 - 3*x^2 + x
+}
+f_prime <- function(x) {
+  4*x^3 - 6*x + 1
+}
+f_double_prime <- function(x) {
+  12*x^2 - 6
+}
+
+xk <- 0 # Initialize our first guess
+maxit <- 100 # Set a max number of iterations
+for(k in 1:maxit) {
+  xnew <- xk - 
+    f_prime(xk)/f_double_prime(xk)
+  if(abs(xk - xnew) < 1e-10) {
+    break
+  }
+  xk <- xnew
+}
+xk # Estimate for the zero
+k  # Number of iterations to converge
+```
+
+\vspace{.1in}
+
+Does $x=0.1699384$ minimize the function? What if we started at a value different than 0:
+
+:::::: {.cols data-latex=""}
+::: {.col data-latex="{0.50\textwidth}"}
+
+```{r newtons_opt2}
+xk <- 1 # Initialize our first guess
+for(k in 1:maxit) {
+  xnew <- xk - 
+    f_prime(xk)/f_double_prime(xk)
+  if(abs(xk - xnew) < 1e-10) {
+    break
+  }
+  xk <- xnew
+}
+xk # Estimate for the zero
+```
+
+:::
+::: {.col data-latex="{0.03\textwidth}"}
+\phantom{.}\
+
+:::
+::: {.col data-latex="{0.50\textwidth}"}
+
+```{r newtons_opt3}
+xk <- -1 # Initialize our first guess
+for(k in 1:maxit) {
+  xnew <- xk - 
+    f_prime(xk)/f_double_prime(xk)
+  if(abs(xk - xnew) < 1e-10) {
+    break
+  }
+  xk <- xnew
+}
+xk # Estimate for the zero
+```
+
+:::
+::::::::::::::
+
+\vspace{.1in}
+
+Now we are getting three answers at three different starting points! What is happening?
+```{r newtons_opt_f_vals}
+f(0.1699384); f(1.130901); f(-1.30084)
+```
+
+\vspace{.1in}
+
+This is illustrating one of the most common problems with optimization algorithms: [they can converge to local extrema instead of global extrema]{.underline}. In addition, some methods can also converge to the wrong type of extrema. That is, they could find a maximum when a minimum is desired and vise-versa. 
+
+\begin{minipage}{.6\textwidth}
+
+This first issue, converging to the wrong point, occurs if the function is not {\bf convex}. A function is convex if the line segment between any two distinct points on the graph of the function lies above the graph between the two points. There are different types of convex functions.\\
+
+\begin{itemize}
+\item $f$ is convex if and only if $f''(x)\ge 0$ for all $x$.
+\item $f$ is called {\bf strictly convex} if $f''(x)>0$ for all $x$. 
+\item $f$ is called {\bf strongly convex} if $f''(x)\ge m>0$ for all $x$. \\
+\end{itemize}
+
+A convex function is shaped like a cup $\cup$. A {\bf concave} function is shaped like a cap $\cap$. If $f(x)$ is convex, then $-f(x)$ would be concave and vise-versa. Many functions are neither convex nor concave.\
+
+\end{minipage}
+\begin{minipage}{.5\textwidth}
+\hspace{.3in}\includegraphics[width = 2in]{optim_figs/convex.jpg}
+\end{minipage}
+
+
+We can alleviate these problems (to an extent) by 
+
+1. Forcing our method to always find a minimum. 
+  - This will make it so we do not find type of extrema we don't want. 
+  - We can always find a maximum of $f(x)$ by minimizing $-f(x)$.
+2. Allowing a change in the step size of our method. 
+  - This can (sometimes) get us "unstuck" from a local minimum. 
+  - Truthfully, getting stuck at a local minimum is the biggest problem for any optimization technique and not one we will be able to tackle here. The easiest way to get around this is to choose different starting points.
+
+
+# Gradient Descent Method
+
+One way to remove the potential to converge to a maximum is to remove the second derivative from the equation and instead multiply by a value that is always positive. If we have $x_{k+1}=x_k - \gamma\cdot f'(x_k)$, then if $f'(x_k)>0$, we will move to the left (toward a minimum) and if $f'(x_k)<0$, we will move to the right (again, toward a minimum). 
+
+So, all we need to tell us which direction to move is $f'(x_k)$. This does not, however, tell us how far to move. One possible value for $\gamma$ is $\gamma=1/|f''(x_k)|$. This usually works, and when it does, it often works well, but if the function has a minimum where the second derivative is 0 or if the function is not twice differential, then this will fail. Also, in higher dimensions, the second derivative matrix, called the Hessian, is also much more difficult and time consuming to compute. 
+
+A method that does not rely on the second derivative or Hessian is called a first-order optimization method. One that does rely on the second derivative is a second-order method. 
+
+One thing we would like to be true about our step size, $\gamma$ is that it should get smaller as we approach the minimizer. Thus, $\gamma$ should change at each iteration. So let's call it $\gamma_k$. 
+
+## Line Search
+
+One way to choose $\gamma_k$ is to make sure we achieve the maximum amount of decrease of the objective function at each individual step. That means we want to minimize $f(x_k - \gamma_k f'(x_k))$. That is, we want 
+$$
+\gamma_k=\underset{\gamma\ge0}{\text{argmin}}\left\{f\Big(x_k-\gamma f'(x_k)\Big)\right\}.
+$$
+So, we have to find a minimizer ($\gamma$) while we are trying to find another minimizer ($x$)! 
+
+One way to find $\gamma_k$ is to use a line search. One option is a **backtracking line search**. In this method, we fix a line-search parameter $\beta$ for $0<\beta<1$. Then start with $\gamma=1$ and while $f\Big(x_k-\gamma f'(x_k)\Big)>f(x_k)-\frac{\gamma}{4}f'(x_k)^2$, update $\gamma = \beta\cdot\gamma$ and try again. Once we have a value of $\gamma$ when that inequality is not true, we set $\gamma_k=\gamma$. 
+
+The code below shows the backtracking line search in action! 
+
+```{r newtons_opt4}
+xk <- 0 # Initialize our first guess
+for(k in 1:maxit) {
+  gamma <- 1
+  beta <- 0.5
+  while(f(xk - gamma * f_prime(xk)) > f(xk) - gamma/4 * f_prime(xk)^2) {
+    gamma <- beta * gamma
+  }
+  xnew <- xk - gamma * f_prime(xk)
+  if(abs(xk - xnew) < 1e-10) {
+    break
+  }
+  xk <- xnew
+}
+xk # Estimate for the zero
+k
+```
+
+\vspace{.1in}
+
+Using $1/|f''(x_k)|$ as our step size (Newton's method), $k=9$ for convergence. So, very close! The time for this method is 0.005 seconds on my computer while Newton's method took 0.003 seconds. 
+
+
+So where does the $f(x_k)-\frac{\gamma}{4}f'(x_k)^2$ come from in the line search inequality? We want to minimize $g(\gamma)=f\Big(x_k - \gamma f'(x_k)\Big)$ with respect to $\gamma$. Take the derivative with respect to $\gamma$:
+$$
+g'(\gamma) = -f'(x_k)f'\Big(x_k - \gamma f'(x_k)\Big).
+$$
+
+When $\gamma=0$, the equation of the tangent line for $f\Big(x_k - \gamma f'(x_k)\Big)$ is $y=g(0) + g'(0)(\gamma-0)$, which is 
+\begin{align*}
+y&=f(x- 0 f'(x_k))- f'(x_k)\cdot f'\Big(x- 0 f'(x_k)\Big)(\gamma-0)\\
+&=f(x)-\gamma f'(x_k)^2.
+\end{align*}
+So, we are sure that $f\Big(x_k-\gamma f'(x_k)\Big)=f(x_k)-\gamma f'(x_k)^2$ when $\gamma=0$. When $\gamma$ is small we have,
+$$
+f\Big(x_k-\gamma f'(x_k)\Big)\approx f(x_k)-\gamma f'(x_k)^2
+$$
+due to a linear approximation. Since $\gamma>0$ and $f'(x_k)^2>0$, we know that when $\gamma$ is small, for $0<\alpha<1$,
+$$
+f(x_k)-\gamma f'(x_k)^2<f(x_k)-\alpha\cdot\gamma f'(x_k)^2.
+$$
+Then that means
+$$
+f\Big(x_k-\gamma f'(x_k)\Big) < f(x_k)-\alpha\cdot\gamma f'(x_k)^2
+$$
+as well since $f\Big(x_k-\gamma f'(x_k)\Big)\approx f(x_k)-\gamma f'(x_k)^2<f(x_k)-\alpha\cdot\gamma f'(x_k)^2$.
+
+Therefore, specifying a larger $\gamma$ value (like $\gamma=1$) and then gradually making it smaller will eventually get it down to a point where
+$$
+f\Big(x_k-\gamma f'(x_k)\Big) <f(x_k)-\alpha\cdot\gamma f'(x_k)^2.
+$$
+That will help us find one of the largest $\gamma$ values that will work as a step size. It has been found that $\alpha$ between 0.01 and 0.3 works well, so we will use $\alpha=0.25$. For more info on this, see *Convex Optimization* by Boyd and Vandenberghe page 465. 
+
+
+If we are able to perfectly optimize $\gamma_k$ at each iteration to take the largest possible step, we would be performing the **steepest descent** optimization method. Steepest descent is a special case of **gradient descent**. Gradient descent is any method whose step direction is equal to $-f'(x_k)$ regardless of step size while steepest descent takes the largest step possible in that direction at each iteration. So while we are probably not actually performing **steepest descent** (since we are estimating the step size), we are attempting to do so. Gradient descent is by definition a first-order optimization method. So even though Newton's method involves $f'(x_k)$, it is not a gradient descent method since it relies on the second derivative. 
+
+
+```{r , eval = F, echo = F}
+
+(x^2*exp(x) - exp(x)*2x)/(x^4)
+
+exp(x)*(x-2)/x^3
+exp(x)*(1/x^2 - 2/x^3)
+
+exp(x)*(1/x^2 - 2/x^3) + exp(x)*(-2/x^3 + 6/x^4)
+
+
+xk <- -1 # Initialize our first guess
+for(k in 1:10000) {
+  xnew <- xk - exp(xk)*(xk-2)/xk^3 * 
+    1/(exp(xk)*(xk^2-4*xk+6)/xk^4)
+  if(abs(xk - xnew) < 1e-10) {
+    break
+  }
+  xk <- xnew
+}
+xk # Estimate for the zero
+```
+
+
+
+# Optimization in Higher Dimensions
+
+
+## Gradient Descent
+
+Now that we have some intuition about these optimization algorithms, we should discuss them in higher dimensions. A mutli-dimensional derivative is known as a **gradient** (hence the name of gradient descent). A gradient gives the direction of fastest change (increase or decrease). These gradients can be computed using **partial derivatives**. This is a Calculus III topic, but they are pretty simple. When taking the partial derivatives of a function with respect to a variable, we just treat all other variables as constants.
+ 
+**Example 5** Let $f(x,y,z) = 12x^2y+y^2z+z^2$.\
+
+$\dfrac{\partial f}{\partial x}=$ \hspace{2in} $\dfrac{\partial f}{\partial y}=$ \hspace{2in} $\dfrac{\partial f}{\partial z}=$
+
+\newpage
+
+The gradient of $f(x_1,x_2,\dots,x_n)=f(\xb)$ is $\nabla f(\xb)=\begin{bmatrix}
+\dfrac{\partial f}{\partial x_1}\\
+\\
+\dfrac{\partial f}{\partial x_2}\\
+\vdots\\
+\dfrac{\partial f}{\partial x_n}
+\end{bmatrix}$. So the gradient of a function of $n$ variables is an $n$ directional vector. The gradient of the function in Example 5 is
+
+$f(x, y, z)$ is $\nabla f(\xb)=\begin{bmatrix}
+\dfrac{\partial f}{\partial x}\\
+\\
+\dfrac{\partial f}{\partial y}\\
+\vdots\\
+\dfrac{\partial f}{\partial z}
+\end{bmatrix} = \begin{bmatrix}
+24x\\
+12x^2+2yz\\
+\vdots\\
+y^2+2z
+\end{bmatrix}.
+$ That means the slope at a given point $(x,y,z)$ is greatest when we go $24x$ in the $x$-direction, $12x^2+2yz$ in the $y$-direction, and $y^2+2x$ in the $z$-direction. 
+
+For using the gradient descent method in higher dimensions, we need to replace  
+$f'(x)$ with $\nabla f(\xb)$. So, we have 
+$$
+\xb_{k+1}=\xb_{k}-\gamma_k \nabla f(\xb).
+$$
+
+We can find $\gamma_k$ again using a line search. We still fix a line-search parameter $\beta$ for $0<\beta<1$. Then start with $\gamma=1$ and while $f\Big(\xb_k-\gamma \nabla f(\xb_k)\Big)>f(\xb_k)-\frac{\gamma}{4}\Vert \nabla f(\xb_k)\Vert^2$, update $\gamma = \beta\gamma$ and try again. Once we have a value of $\gamma$ when that inequality is not true, we set $\gamma_k=\gamma$.
+
+Notice that $f'(x_k)^2$ has been replaced with $\Vert \nabla f(\xb_k)\Vert^2$, which is the squared **Euclidean norm** of the gradient vector. That is, $\displaystyle\Vert \nabla f(\xb_k)\Vert^2=\sum_{i=1}^n\left(\dfrac{\partial f}{\partial x_i}\Big\vert_{\xb_k}\right)^2$. We can find this in **R** using either `norm(gradient, type = "2")` or `sum(gradient^2)`. 
+
+Also, when we check for convergence, the norm of the difference in the vectors can be used.\vspace{.2in}
+
+**Example 6**: Recall in Notes 7 when we discussed the Poisson regression, we used maximum likelihood to find the estimates for the intercept and slope. In that example we had the log likelihood was 
+$$
+\ell(\beta_0, \beta_1)=\sum_{i=1}^ny_i(\beta_0+\beta_1x_i) - \sum_{i=1}^n\exp(\beta_0+\beta_1x_i) - \sum_{i=1}^n\ln(y_i!)
+$$
+However, we want to maximize this function and our algorithm only works to minimize functions. Easy fix! Maximizing a function is the same as minimizing its negative. So, we want to minimize 
+$$
+n\ell(\beta_0, \beta_1)=-\left(\sum_{i=1}^ny_i(\beta_0+\beta_1x_i) - \sum_{i=1}^n\exp(\beta_0+\beta_1x_i) - \sum_{i=1}^n\ln(y_i!) \right)
+$$
+
+Now obtain the gradient:
+$$
+\nabla n\ell(\beta_0, \beta_1)=\begin{bmatrix}
+\dfrac{\partial n\ell}{\partial \beta_0}\\
+\\
+\dfrac{\partial n\ell}{\partial \beta_1}
+\end{bmatrix} = \begin{bmatrix}
+\displaystyle-\left(\sum_{i=1}^ny_i - \sum_{i=1}^n\exp(\beta_0+\beta_1x_i)\right)\\
+\displaystyle-\left(\sum_{i=1}^nx_iy_i - \sum_{i=1}^nx_i\exp(\beta_0+\beta_1x_i)\right)
+\end{bmatrix}
+$$
+
+In this case, the variables we are trying to find are $\beta_0$ and $\beta_1$. Let's code an implementation of this in **R**.\vspace{.1in}
+
+```{r poisson_setup}
+set.seed(2024)
+x <- rnorm(5) # Simulate 5 random values for x
+# Simulate 5 random values for y (with a couple different means)
+y <- c(rpois(3, 2), rpois(2, 6))
+mod <- glm(y ~ x, family = "poisson") # Fit the Poisson model
+b0 <- coef(mod)[1] # Extract the intercept
+b1 <- coef(mod)[2] # Extract the slope
+b0; b1
+```
+
+```{r pois_opt_grad_desc}
+neg_likelihood <- function(beta) {
+  # Make it negative since we are trying to maximize it.
+  #   That is the same as minimizing the negative.
+  -(sum(y*(beta[1] + beta[2]*x)) - sum(exp(beta[1] + beta[2]*x)) - 
+      sum(log(factorial(y))))
+}
+gradient <- function(beta) {
+  # These should be the partial derivatives of the function we are
+  #   minimizing. So, their signs are also opposites. 
+  dl_db0 <- -(sum(y) - sum(exp(beta[1] + beta[2]*x)))
+  dl_db1 <- -(sum(x*y) - sum(x*exp(beta[1] + beta[2]*x)))
+  c(dl_db0, dl_db1) # Return the gradient vector
+}
+
+maxit <- 100
+betak <- c(0, 0) # Initialize our first guess
+for(k in 1:maxit) {
+  gamma <- 1
+  line_beta <- 0.5 # Line search parameter, not a beta from the model! 
+  while(neg_likelihood(betak - gamma * gradient(betak)) > 
+        neg_likelihood(betak) - gamma/4 * sum(gradient(betak)^2)) {
+    gamma <- line_beta * gamma
+  }
+  newbeta <- betak - gamma * gradient(betak)
+  if(norm(betak - newbeta, type = "2") < 1e-10) {
+    break
+  }
+  betak <- newbeta
+}
+betak # Estimate for the zero
+k
+```
+\vspace{.1in}
+
+
+## Newton's Method
+
+Now, for one input variable, Newton's method looks like 
+$$
+x_{k+1}=x_k-\dfrac{f'(x_k)}{f''(x_k)}
+$$
+We already saw that a multi-dimensional version of $f'(x_k)$ is the gradient. A multi-dimensional version of a second derivative is called a Hessian. Here is how the Hessian of a function $f(x_1,x_2,\dots,x_n)=f(\xb)$ is defined:
+$$
+\mathbf{H}_f=\begin{bmatrix}
+\dfrac{\partial^2 f}{\partial x_1^2} & \dfrac{\partial^2 f}{\partial x_1\partial x_2} & \cdots & \dfrac{\partial^2 f}{\partial x_1\partial x_n}\\
+\\
+\dfrac{\partial^2 f}{\partial x_2\partial x_1} & \dfrac{\partial^2 f}{\partial x_2^2} & \cdots & \dfrac{\partial^2 f}{\partial x_2\partial x_n}\\
+\\
+\vdots & \vdots & \ddots & \vdots\\
+\\
+\dfrac{\partial^2 f}{\partial x_n\partial x_1} & \dfrac{\partial^2 f}{\partial x_n\partial x_2} & \cdots & \dfrac{\partial^2 f}{\partial x_n^2}
+\end{bmatrix}.
+$$
+
+Note that when we take the second partial derivatives with more than one variable, $\dfrac{\partial^2 f}{\partial x_i\partial x_j}=\dfrac{\partial}{\partial x_i}\left[\dfrac{\partial f}{\partial x_j}\right]$. So, we take the partial derivative with respect to the variable listed second in the denominator first, and then take the other partial derivative. However, this usually does not matter since $\dfrac{\partial^2 f}{\partial x_i\partial x_j}=\dfrac{\partial^2 f}{\partial x_j\partial x_i}$ in almost every practical case. 
+
+Notice also that these operations are getting larger. $f(\xb)$ is a scalar, $\nabla f(\xb)$ is an $n\times1$ vector, and $\mathbf{H}_f$ is an $n\times n$ matrix.
+
+Getting back to the equation, we are dividing by $f''(x_k)$ in Newton's method. We don't divide matrices, instead, we take inverses and multiply. So, Newton's method becomes
+$$
+\xb_{k+1}=\xb_k-\left[\mathbf{H}_f\right]^{-1}\nabla f(\xb).
+$$
+Because an inverse of a matrix exists here, this method can become **very** computational expensive when $n$ is large.
+
+**Example 6**: Let's try Newton's method on the Poisson regression problem. Recall the gradient:
+$$
+\nabla n\ell(\beta_0, \beta_1)=\begin{bmatrix}
+\dfrac{\partial n\ell}{\partial \beta_0}\\
+\\
+\dfrac{\partial n\ell}{\partial \beta_1}
+\end{bmatrix} = \begin{bmatrix}
+\displaystyle-\left(\sum_{i=1}^ny_i - \sum_{i=1}^n\exp(\beta_0+\beta_1x_i)\right)\\
+\displaystyle-\left(\sum_{i=1}^nx_iy_i - \sum_{i=1}^nx_i\exp(\beta_0+\beta_1x_i)\right)
+\end{bmatrix}
+$$
+To complete the Hessian, we need to get more partial derivatives:
+
+$$
+\mathbf{H}_f = \begin{bmatrix}
+\dfrac{\partial^2 n\ell}{\partial \beta_0^2} & \dfrac{\partial^2 n\ell}{\partial \beta_0 \partial \beta_1}\\
+\\
+\dfrac{\partial^2 n\ell}{\partial \beta_1 \partial \beta_0} & \dfrac{\partial^2 n\ell}{\partial \beta_1^2}
+\end{bmatrix}=\begin{bmatrix}
+\displaystyle\sum_{i=1}^n\exp(\beta_0+\beta_1x_i) & \displaystyle\sum_{i=1}^nx_i\exp(\beta_0+\beta_1x_i)\\
+\displaystyle\sum_{i=1}^nx_i\exp(\beta_0+\beta_1x_i) & \displaystyle\sum_{i=1}^nx_i^2\exp(\beta_0+\beta_1x_i)
+\end{bmatrix}
+$$
+Let's code it up!
+
+```{r pois_opt}
+neg_likelihood <- function(beta) {
+  # Make it negative since we are trying to maximize it.
+  #   That is the same as minimizing the negative.
+  -(sum(y*(beta[1] + beta[2]*x)) - sum(exp(beta[1] + beta[2]*x)) - 
+      sum(log(factorial(y))))
+}
+gradient <- function(beta) {
+  # These should be the partial derivatives of the function we are
+  #   minimizing. So, their signs are also opposites. 
+  dl_db0 <- -(sum(y) - sum(exp(beta[1] + beta[2]*x)))
+  dl_db1 <- -(sum(x*y) - sum(x*exp(beta[1] + beta[2]*x)))
+  c(dl_db0, dl_db1) # Return the gradient vector
+}
+hessian <- function(beta) {
+  matrix(
+    c(sum(exp(beta[1] + beta[2]*x)), sum(x*exp(beta[1] + beta[2]*x)),
+      sum(x*exp(beta[1] + beta[2]*x)), sum(x^2*exp(beta[1] + beta[2]*x))), 
+    nrow = 2
+  )
+}
+
+maxit <- 100
+betak <- c(0, 0) # Initialize our first guess
+for(k in 1:maxit) {
+  newbeta <- betak - solve(hessian(betak)) %*% gradient(betak)
+  if(norm(betak - newbeta, type = "2") < 1e-10) {
+    break
+  }
+  betak <- newbeta
+}
+betak # Estimate for the zero
+k
+```
+
+\vspace{.1in}
+
+This converges in far fewer iterations than the gradient descent method and a line search is not needed. 
+
+The bottleneck here is usually finding the Hessian, since that needs to be done by hand first, and then inverting the Hessian if $n$ is big. However, we don't actually need to compute and store the Hessian matrix. We just need to know what $\left[\mathbf{H}_f\right]^{-1}\nabla f(\xb)$ is equal to. If we say $\left[\mathbf{H}_f\right]^{-1}\nabla f(\xb)=\boldsymbol{r}$, it can often be much quicker to use numerical methods to determine what $\boldsymbol{r}$ is by setting $\mathbf{H}_f\boldsymbol{r}=\nabla f(\xb)$ and then applying a method like **conjugate gradient** (if applicable) to solve for $\boldsymbol{r}$ numerically at each iteration. We won't go over the conjugate gradient method, but I have included information about it on the last few pages of these notes in case you are interested. 
+
+# R `optimize()` and `optim()` Functions
+
+**R** has a couple of nice optimization functions built into the `stats` library that is a part of base **R**. For one-dimensional optimization, we can use the `optimize()` function. For general purpose optimization, including in multi-dimensional space, the `optim()` function is the one that should be used. These functions use algorithms that are more advanced than the ones we discussed here, but they are similar. 
+
+Let's see a couple examples:
+```{r optimize_function}
+f <- function(x) {
+  x^4 - 3*x^2 + x
+}
+optimize(f, c(-10, 10)) # Finds the minimum
+optimize(f, c(-10, 10), maximum = T) # Finds the maximum (not helpful here)
+```
+
+\newpage
+
+```{r optim_function}
+set.seed(2024)
+x <- rnorm(5)
+y <- c(rpois(3, 2), rpois(2, 6))
+likelihood <- function(beta) {
+  # Define the positive likelihood
+  sum(y*(beta[1] + beta[2]*x)) - sum(exp(beta[1] + beta[2]*x)) - 
+      sum(log(factorial(y)))
+}
+starting_values <- c(0, 0)
+# Putting "fnscale" to a negative number makes us maximize instead of minimize
+optim(starting_values, likelihood, control = list(fnscale = -1))
+```
+
+
+\newpage
+
+
+
+
+# Bonus: Conjugate Gradient Method
+
+The conjugate gradient (CG) and preconditioned conjugate gradient (PCG) methods are algorithms for finding numerical solutions for systems of linear equations like those in the form
+\begin{equation}
+\label{equ:cg}
+\Ab\xb=\bb,
+\end{equation}
+where $\Ab$ and $\bb$ are known and we are interested in finding the solution $\xb$. There are some restrictions on $\Ab$ in that it must be symmetric (i.e. $\Ab^T=\Ab$) and positive definite (i.e. $\xb^T\Ab\xb>0$ for all nonzero $\xb\in\R^n$). A matrix with both of these properties is known as symmetric positive definite (SPD). If these are satisfied, CG is one of the most useful numerical techniques for solving large linear systems of equations. 
+
+\subsection{The Method}
+We will first explain the CG method before discussing the PCG method. The key to CG is the fact that solving the expression (\ref{equ:cg}) is equivalent to the following minimization problem:
+ \begin{equation*}
+\arg\min_{\xb}J(\xb):=\frac{1}{2}\xb^T\Ab\xb-\bb^T\xb,
+\end{equation*}
+since both give the same solution, which we will denote $\xb_*$. Using vector derivatives, the gradient of $J$ is equal to
+$$
+\nabla J(\xb)=\Ab\xb-\bb:=\rb(\xb),
+$$ 
+which is also known as the residual of the linear system. The only use of $\rb$ in this section will refer to the residual as opposed to a vector of distances, as it is elsewhere in the thesis. Since CG is an iterative method, when $\xb=\xb_k$, the $k$th iteration of $\xb$, the $k$th iteration of the residual is given by 
+\begin{equation}
+\label{equ:resid}
+\rb_k=\Ab\xb_k-\bb.
+\end{equation}
+Therefore, the direction of steepest descent of the function $J(\xb)$ at iteration $k$ is $-\nabla J(\xb)=-\rb_k$.
+
+Now, the conjugacy in the name of the CG method comes from the fact that it uses the property that two vectors, $\ub$ and $\vb$, are called *conjugate* with respect to a SPD matrix $\Ab$ if $\ub^T\Ab\vb=0$ for $\ub\ne\vb$. Take a set of nonzero, conjugate vectors $\{\pb_1,\dots,\pb_n\}$. Since they are conjugate, it is simple to show they are also linearly independent, and hence, form a basis in $\R^n$. This means the solution can be written as a linear combination of these vectors,
+$$
+\xb_*=\xb_0+\sum_{i=1}^n\alpha_i\pb_i.
+$$
+Therefore, if we let 
+\begin{equation}
+\label{equ:x_k}
+\xb_{k+1}=\xb_k+\alpha_k\pb_k,
+\end{equation}
+where the subscript denotes iteration number. We will obtain the solution $\xb_*$ in at most $n$ iterations since it is certain that $\xb_n=\xb_*$. Ideally, we will choose these $\pb_k$ vectors in such a way that we can approximate $\xb_*$ in fewer than $n$ iterations, which is necessary for large $n$.
+
+We need an expression for $\alpha_k$ and $\pb_k$. To determine the $\alpha_k$ values, we will minimize $J(\xb_{k+1})$ with respect to $\alpha_k$:
+\begin{align*}
+J(\xb_{k+1})&=J(\xb_{k}+\alpha_k\pb_k)=\frac{1}{2}(\xb_{k}+\alpha_k\pb_k)^T\Ab(\xb_{k}+\alpha_k\pb_k)-\bb^T(\xb_{k}+\alpha_k\pb_k)\\
+&=\frac{1}{2}\xb_k^T\Ab\xb_k+\alpha_k\xb_k^T\Ab\pb_k+\frac{1}{2}\alpha_k^2\pb_k^T\Ab\pb_k-\bb^T\xb_k-\alpha_k\bb^T\pb_k,
+\end{align*}
+and so
+\begin{align*}
+\frac{d}{d\alpha_k}J(\xb_{k+1})=0\implies \xb_k^T\Ab\pb_k+\alpha_k\pb_k^T\Ab\pb_k-\bb^T\pb_k=0.
+\end{align*}
+Solving this for $\alpha_k$ gives
+\begin{align}
+\label{equ:alpha_k}
+\alpha_k&=\frac{\bb^T\pb_k- \xb_k^T\Ab\pb_k}{\pb_k^T\Ab\pb_k}=\frac{(\bb^T- \xb_k^T\Ab)\pb_k}{\pb_k^T\Ab\pb_k}\nonumber\\
+&=-\frac{\rb_k^T\pb_k}{\pb_k^T\Ab\pb_k}.
+\end{align}
+
+Since $\pb_k$ can be thought of as the step direction, and we showed $-\rb_k$ is the steepest descent direction, we will update the $\pb_k$ by using the residuals and the previous $\pb$ vector:
+\begin{equation}
+\label{equ:p_k}
+\pb_{k+1}=-\rb_{k+1}+\beta_{k}\pb_k.
+\end{equation}
+The choice of $\beta_k$ will be discussed below and $\rb_{k+1}$ is updated by using (\ref{equ:resid}) and (\ref{equ:x_k}). Specifically, 
+\begin{align}
+\label{equ:r_k}
+\rb_{k+1}&=\Ab\xb_{k+1}-\bb \quad \text{by (\ref{equ:resid})}\nonumber\\
+&=\Ab(\xb_k+\alpha_k\pb_k)-\bb \quad \text{by (\ref{equ:x_k})}\nonumber\\
+&=\Ab\xb_k-\bb+\alpha_k\Ab\pb_k\nonumber\\
+&=\rb_{k}+\alpha_k\Ab\pb_k.
+\end{align}
+$\beta_k$ must be chosen so that the conjugacy of the $\pb_i$ vectors with respect to $\Ab$ is retained, i.e. $\pb_{k}^T\Ab\pb_{k+1}=0$. Left-multiplying (\ref{equ:p_k}) by $\pb_{k}^T\Ab$ yields
+\begin{align*}
+\pb_{k}^T\Ab\pb_{k+1}=\pb_{k}^T\Ab(-\rb_{k+1}+\beta_k\pb_k)&=0\\
+\implies-\pb_{k}^T\Ab\rb_{k+1}+\beta_k\pb_{k}^T\Ab\pb_k&=0.
+\end{align*}
+Solving this for $\beta_k$ gives us
+\begin{equation*}
+\beta_k=\frac{\pb_{k}^T\Ab\rb_{k+1}}{\pb_{k}^T\Ab\pb_k}.
+\end{equation*}
+
+To slightly increase the efficiency of this algorithm, we will now make a few adjustments. Firstly, it is possible to show that $\rb_i^T\rb_j=0$ for $i\ne j$ and $\rb_i^T\pb_j=0$ for $i> j$. Using this fact and (\ref{equ:p_k}), we can change the expression for $\alpha_k$ in (\ref{equ:alpha_k}) to be 
+\begin{align*}
+\alpha_k=-\frac{\rb_k^T\pb_k}{\pb_k^T\Ab\pb_k}=-\frac{\rb_k^T(-\rb_k+\beta_k\pb_{k-1})}{\pb_k^T\Ab\pb_k}=\frac{\rb_k^T\rb_k-\beta_k\rb_k^T\pb_{k-1}}{\pb_k^T\Ab\pb_k}=\frac{\rb_k^T\rb_k}{\pb_k^T\Ab\pb_k}.
+\end{align*}
+
+Now, using the orthogonality of the $\rb_i$ vectors and the fact in (\ref{equ:r_k}) that $\rb_{k+1}=\rb_k-\alpha_k\Ab\pb_k$ and thus $\Ab\pb_k=(\rb_k-\rb_{k+1})/\alpha_k$, $\beta_k$ can be written
+\begin{align*}
+\beta_k&=\frac{\pb_{k}^T\Ab\rb_{k+1}}{\pb_{k}^T\Ab\pb_k}=\frac{(\rb_k-\rb_{k+1})^T\rb_{k+1}/\alpha_k}{\pb_{k}^T(\rb_k-\rb_{k+1})/\alpha_k}=\frac{\rb_k^T\rb_{k+1}-\rb_{k+1}^T\rb_{k+1}}{(-\rb_{k}+\beta_{k-1}\pb_{k-1})^T(\rb_k-\rb_{k+1})}\\
+&=\frac{\rb_{k+1}^T\rb_{k+1}}{\rb_{k}\rb_k}.
+\end{align*}
+Now that we have more economical representations of $\alpha_k$ and $\beta_k$, we can write the CG algorithm in full as Algorithm \ref{alg:cg}.
+\begin{algorithm}
+\caption{Conjugate Gradient Method}
+\label{alg:cg}
+0. Set $k=0$, $\rb_0=\Ab\xb_0-\bb$, and $\pb_0=-\rb$;\\
+1. Set $\displaystyle \alpha_k=\frac{\rb_k^T\rb_k}{\pb_k^T\Ab\pb_k}$;\\
+2. Set $\displaystyle \xb_{k+1}=\xb_k+\alpha_k\pb_k$;\\
+3.  Set $\displaystyle \rb_{k+1}=\rb_k+\alpha_k\Ab\pb_k$;\\
+4. Set $\displaystyle \beta_{k}=\frac{\rb_{k+1}^T\rb_{k+1}}{\rb_k^T\rb_k}$;\\
+5. Set $\displaystyle \pb_{k+1}=-\rb_{k+1}+\beta_{k}\pb_k$;\\
+6. Return to step 1 and repeat until $\rb_{k+1}$ is sufficiently small.
+\end{algorithm}
+
+
+We have stated that it will take at most $n$ iterations for CG to reach the solution, $\xb_*$. While that is true, it often reaches an acceptable solution much more quickly. For instance, if $\Ab$ has $r$ distinct eigenvectors, the CG algorithm will obtain the solution in at most $r$ iterations. Additionally, there are two error bounds that can be useful in assessing convergence. If we denote the eigenvalues of $\Ab$ as $\lambda_1\le\lambda_2\le\dots\le\lambda_n$, then the following two bounds hold:
+\begin{align*}
+(1)\quad &(\xb_{k+1}-\xb_*)^T\Ab(\xb_{k+1}-\xb_*)\le\left(\frac{\lambda_{n-k}-\lambda_1}{\lambda_{n-k}+\lambda_1}\right)^2(\xb_{0}-\xb_*)^T\Ab(\xb_{0}-\xb_*)\\
+(2)\quad &(\xb_{k+1}-\xb_*)^T\Ab(\xb_{k+1}-\xb_*)\le\left(\frac{\sqrt{\lambda_n/\lambda_1}-1}{\sqrt{\lambda_n/\lambda_1}+1}\right)^k(\xb_{0}-\xb_*)^T\Ab(\xb_{0}-\xb_*).
+\end{align*}
+Therefore, it is clear that the speed of the CG convergence is dependent on the eigenvalues of $\Ab$.
+
+
+\subsection{Preconditioning}
+Since the eigenvalues of $\Ab$ are important in the convergence speed of the CG algorithm, we can increase the convergence rate by using a preconditioner matrix, $\mathbf{G}=\mathbf{E}\mathbf{E}^T$, so that the CG depends on the eigenvalues of $\mathbf{E}^{-T}\Ab\mathbf{E}^{-1}$ instead of $\Ab$. Using a preconditioner will yield the preconditioned conjugate gradient (PCG) method. The best preconditioner is one in which  $\mathbf{E}^{-T}\Ab\mathbf{E}^{-1}\approx \Ib$, the identity matrix, and $\mathbf{G}$ is efficient to invert. Using a preconditioner is equivalent to making the change of variables $\boldsymbol{y}=\mathbf{E}\xb$ and then solving the linear system 
+$$
+(\mathbf{E}^{-T}\Ab\mathbf{E}^{-1})\boldsymbol{y}=\mathbf{E}^{-T}\bb,
+$$
+which is equivalent to (\ref{equ:cg}). The resulting PCG algorithm is given as Algorithm \ref{alg:pcg}.
+\begin{algorithm}[t]
+\caption{Preconditioned Conjugate Gradient Method}
+\label{alg:pcg}
+0. Set $k=0$, $\rb_0=\Ab\xb_0-\bb$, $\boldsymbol{z}_0=\mathbf{G}^{-1}\rb_0$, and $\pb_0=-\boldsymbol{z}_0$;\\
+1. Set $\displaystyle \alpha_k=\frac{\rb_k^T\rb_k}{\pb_k^T\Ab\pb_k}$;\\
+2.  Set $\displaystyle \xb_{k+1}=\xb_k+\alpha_k\pb_k$;\\
+3.  Set $\displaystyle \rb_{k+1}=\rb_k+\alpha_k\Ab\pb_k$;\\
+4. Set $\displaystyle \boldsymbol{z}_{k+1}= \mathbf{G}^{-1}\rb_{k+1}$;\\
+5. Set $\displaystyle \beta_{k}=\frac{\boldsymbol{z}_{k+1}^T\rb_{k+1}}{\boldsymbol{z}_k^T\rb_k}$;\\
+6. Set $\displaystyle \pb_{k+1}=-\boldsymbol{z}_{k+1}+\beta_{k}\pb_k$;\\
+7. Return to step 1 and repeat until $\rb_{k+1}$ is sufficiently small.
+\end{algorithm}
+
+
+Note that $\mathbf{E}$ is not used in the implementation of PCG; $\mathbf{G}$ is the only new matrix needed. Although each iteration of PCG is more costly than each iteration of CG, the total number of iterations needed for PCG is significantly lower with a good choice of a preconditioner. PCG is the method we will use in this thesis to solve for our MAP estimator. 
+
+An illustration of the CG and PCG methods is presented in Figure \ref{fig:cg}. The left side shows the way $\xb_k$ converges to the solution in a small-scale example when using CG. For this example,
+$$
+\Ab=\begin{bmatrix} 3.5 & -1 \\ -1 & 1.5\end{bmatrix}
+\text{and }
+\bb=\begin{bmatrix}
+2.75\\
+2.25
+\end{bmatrix},
+\text{ which means }
+\xb_*=\begin{bmatrix}
+1.5\\
+2.5
+\end{bmatrix}.
+$$
+Beginning with $\xb_0=(0,0)^T$, the first iteration of CG yields $\xb_1=(1.60,1.30)^T$ and the second iteration $\xb_2=\xb_*$ arrives at the true solution, as it should since $n=2$.
+The advantage PCG has over CG is illustrated on the right side of Figure \ref{fig:cg}. We now use the preconditioner
+$$
+\mathbf{G}=\begin{bmatrix} 3.5 & 0 \\ 0 & 1.5\end{bmatrix}
+$$
+that has just the diagonal entries of $\Ab$ and is therefore easier to invert. This time, $\xb_1=(1.37,2.61)^T$, which is substantially closer to $\xb_*$ than $\xb_1$ was in the CG case and $\xb_2=\xb_*=(1.5,2.5)^T$. For this example, both the CG and PCG converged to the true solution in two iterations, but it is clear that PCG has the potential to converge in fewer iterations for a problem with much larger $n$. 
+
+\begin{figure}
+\centering
+\includegraphics[width=2.5in]{optim_figs/CGfig.pdf}\quad
+\includegraphics[width=2.5in]{optim_figs/PCGfig.pdf}
+\caption{Conjugate gradient methods. The image on the left tracks the convergence of the CG algorithm and the image on the right shows PCG. Both methods converged in two iterations.}
+\label{fig:cg}
+\end{figure}
+
+
+\newpage
+
+**Session Info**\
+
+\tiny
+```{r session}
+sessionInfo()
+```
