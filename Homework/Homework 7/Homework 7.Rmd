@@ -1,0 +1,141 @@
+---
+title: "MATH 3190 Homework 7 Solutions"
+author: "Focus: Notes 9"
+date: "Due April 6, 2024"
+output: pdf_document
+header-includes:
+   - \usepackage{multirow}
+editor_options: 
+  chunk_output_type: console
+urlcolor: blue
+---
+
+Your homework should be completed in R Markdown or Quarto and Knitted to an html or pdf document. You will ``turn in" this homework by uploading to your GitHub Math_3190_Assignment repository in the Homework directory.
+
+Some of the parts in this homework, like 1a, 2a, 2b, and 2c require writing down some math-heavy expressions. You may either type it up using LaTeX style formatting in R Markdown, or you can write it by hand (neatly) and include pictures or scans of your work in your R Markdown document. 
+
+# Problem 1 (33 points)
+
+Suppose we want to find the value of $x$ and the objection function value for finding the global maximum and the minimum of the function $f(x)=\ln(1+x^2)(1+x)e^{-x^2}$. We will implement gradient descent and Newton's method for finding these extrema.
+
+### Part a (4 points)
+Find $f'(x)$ for this function. Do this by hand as a nice derivative refresher. Feel free to check your answer using something like Wolfram Alpha. 
+
+
+### Part b (12 points)
+Write a function that implements gradient descent. Use a backtracking line search each iteration to find $\gamma_k$: the step size. This function should take eight inputs: 
+
+* The starting value (or vector)
+* The function to optimize
+* The function's derivative (or gradient)
+* A logical indicating if we want to find a max with a default of `FALSE`.
+* The maximum number of iterations with a default of 200
+* The initial step size with a default of 1
+* The line search beta parameter with a default of 0.5.
+* The stopping tolerance with a default of `1e-10`. 
+
+The output of this function should be a list with the $x$ value (or vector) that optimizes the function, the function value at that point, and the number of iterations it took to converge. This function should work in the case of one dimension or multiple dimensions since you'll use it again in problem 2.
+
+
+### Part c (3 points)
+Use your gradient descent function to find the global **min** of $f(x)=\ln(1+x^2)(1+x)e^{-x^2}$. Try using several starting points. Keep track of and report the number of iterations needed to converge at the different starting points.
+
+
+### Part d (3 points)
+Use your gradient descent function to find the global **max** of $f(x)=\ln(1+x^2)(1+x)e^{-x^2}$. Again, try several starting points. Keep track of and report the number of iterations needed to converge at the different starting points.
+
+
+### Part e (6 points)
+Use the fact that
+$$
+f''(x)=\dfrac{2e^{-x^2}}{(1+x^2)^2}\left((2x^3+2x^2-3x-1)(1+x^2)^2\ln(1+x^2)-4x^5-4x^4-3x^3-5x^2+3x+1\right)
+$$
+to implement Newton's method to find the global max **and** the global min. Use the same starting points you did in parts c and d. Keep track of and report the number of iterations needed to converge at the different starting points. And yes, that second derivative is very messy! This is one reason why Newton's method is less popular. You don't have to write a function for this part to implement Newton's method, but you can if you'd like.
+
+
+### Part f (3 points)
+Compare the number of iterations needed for convergence for gradient descent and for Newton's method. 
+
+
+### Part g (2 points)
+Use the `optimize()` function in **R** to find the global max and min. 
+
+
+
+# Problem 2 (27 points)
+
+We implemented optimization to maximize the likelihood for a Poisson regression problem in the notes to estimate the $\beta_i$ values for $i=0,\dots,p-1$. Let's do something similar for find the $\boldsymbol{\beta}$ vector by maximizing the likelihood in logistic regression.
+
+In logistic regression, we attempt to predict the probability of a success for a given case. We can use Bernoulli random variable for this. For a Bernoulli random variable, $P(Y=y_i) = p_i^{y_i}(1-p_i)^{1-y_i}$ for $y_i=0,1$ where $p_i$ is the probability of a success. In our case, for logistic regression, we have $\text{logit}(p_i)=\mathbf{X}_i\boldsymbol{\beta}$. That means $p_i = \dfrac{\exp(\mathbf{X}_i\boldsymbol{\beta})}{1+\exp(\mathbf{X}_i\boldsymbol{\beta})}$.
+
+### Part a (4 points)
+Find the likelihood function, $L(\boldsymbol{\beta}|\mathbf{X},\boldsymbol{y})$, for the logistic regression for a sample of size $n$. 
+
+
+### Part b (6 points)
+Show that the log likelihood function is
+$$
+\ell(\boldsymbol{\beta}|\mathbf{X},\boldsymbol{y})=\sum_{i=1}^ny_i\ln\left(\dfrac{\exp(\mathbf{X}_i\boldsymbol{\beta})}{1+\exp(\mathbf{X}_i\boldsymbol{\beta})}\right) + \sum_{i=1}^n(1-y_i)\ln\left(\dfrac{1}{1+\exp(\mathbf{X}_i\boldsymbol{\beta})}\right)
+$$
+and then show it can be equivalently written 
+$$
+\ell(\boldsymbol{\beta}|\mathbf{X},\boldsymbol{y}) = \sum_{i=1}^ny_i(\mathbf{X}_i\boldsymbol{\beta}) - \sum_{i=1}^n\ln\Big(1 + \exp(\mathbf{X}_i\boldsymbol{\beta})\Big).
+$$
+
+
+### Part c (5 points)
+Find the gradient of the log likelihood if we have three $\beta$'s. That is, if $\mathbf{X}_i\boldsymbol{\beta}=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}$.
+
+
+### Part d (3 points)
+In Homework 3, Problem 2, part a, you read in the `adult` dataset (from the UC Irvine [database](https://archive.ics.uci.edu/dataset/2/adult)). This is the one that we used to predict whether a person makes over $50K a year based on some other variables. The data came from the Census Bureau in 1994 and can be found in the Data folder in my Math3190_S24 GitHub repo. More info on the dataset can be found in the "adult.names" file.
+
+Read in the dataset and put column names like you did in HW 3. Then fit a logistic regression model using the `glm()` function that predicts salary from age/10 and sex. Note, we should divide the age by 10 in our model because this makes the gradient descent more stable (for whatever reason). We can divide by 10 in the `glm()` function by wrapping it in the `I()` function. Like this: `glm(salary ~ I(age/10) + sex, data = adult, family = binomial)`.
+
+```{r, message = F}
+library(tidyverse) |> suppressPackageStartupMessages()
+adult <- read_csv(
+  "~/My Drive/Math 3190 - Fundamentals of Data Science/Data/adult/adult.data", 
+  col_names = F
+  ) |>
+  mutate(X15 = factor(X15))
+  
+colnames(adult) <- c(
+  "age",
+  "workclass",
+  "fnlwgt",
+  "education",
+  "education_num",
+  "marital_status",
+  "occupation",
+  "relationship",
+  "race",
+  "sex",
+  "capital_gain",
+  "capital_loss",
+  "hours_per_week",
+  "native_country",
+  "salary"
+)
+
+salary_mod <- glm(salary ~ I(age/10) + sex, data = adult, family = binomial)
+```
+
+
+### Part e (2 points)
+Define `y`, `x1`, and `x2`. `y` should be a vector of 0's and 1's with a 1 indicating that the person had a salary above $50,000. `x1` should be a vector that contains all of the age values (divided by 10) and then `x2` should be an indicator variable that indicates if the person is male or not. Taking columns from the matrix obtained using the `model.matrix()` may be useful here.
+
+
+### Part f (5 points)
+Use your gradient descent function from problem 1 to find estimates for $\beta_0$, $\beta_1$, and $\beta_2$ for predicting salary from age and sex. Enter the following in your function:
+
+* Use the vector `c(0, 0, 0)` as your starting point.
+* Instead of starting the step size, $\gamma_k$, at 1, start it at 0.1 to save some time with the line search.
+* Make sure the maximum number of iterations is at least 200. 
+
+You'll know you did this right if the optimized values you end up with match (or are very close to) the estimates from your logistic regression model you fit in part d. This may take a minute or two to run.
+
+
+### Part g (2 points)
+Use the `optim()` function in **R** to find the estimate for the $\beta$'s here. This should be much faster since this function is much better optimized (no pun intended). The results here should also be very close to the numbers we obtained the slope in the model we fit in part d, but may not match exactly.
+
