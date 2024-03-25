@@ -92,35 +92,6 @@ In Homework 3, Problem 2, part a, you read in the `adult` dataset (from the UC I
 
 Read in the dataset and put column names like you did in HW 3. Then fit a logistic regression model using the `glm()` function that predicts salary from age/10 and sex. Note, we should divide the age by 10 in our model because this makes the gradient descent more stable (for whatever reason). We can divide by 10 in the `glm()` function by wrapping it in the `I()` function. Like this: `glm(salary ~ I(age/10) + sex, data = adult, family = binomial)`.
 
-```{r, message = F}
-library(tidyverse) |> suppressPackageStartupMessages()
-adult <- read_csv(
-  "~/My Drive/Math 3190 - Fundamentals of Data Science/Data/adult/adult.data", 
-  col_names = F
-  ) |>
-  mutate(X15 = factor(X15))
-  
-colnames(adult) <- c(
-  "age",
-  "workclass",
-  "fnlwgt",
-  "education",
-  "education_num",
-  "marital_status",
-  "occupation",
-  "relationship",
-  "race",
-  "sex",
-  "capital_gain",
-  "capital_loss",
-  "hours_per_week",
-  "native_country",
-  "salary"
-)
-
-salary_mod <- glm(salary ~ I(age/10) + sex, data = adult, family = binomial)
-```
-
 
 ### Part e (2 points)
 Define `y`, `x1`, and `x2`. `y` should be a vector of 0's and 1's with a 1 indicating that the person had a salary above $50,000. `x1` should be a vector that contains all of the age values (divided by 10) and then `x2` should be an indicator variable that indicates if the person is male or not. Taking columns from the matrix obtained using the `model.matrix()` may be useful here.
