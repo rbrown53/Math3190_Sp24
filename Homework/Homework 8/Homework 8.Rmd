@@ -52,7 +52,8 @@ Then use the `autoplot()` function to plot the forecast.
 
 
 ### Part h (8 points)
-Plot the actual values for 1990 and 1991 along with the predicted values from the forecast and a shaded 95% interval bands. The `geom_ribbon()` function may be useful here. Is there any point where the true value is outside the interval? If so, report the year(s) and month(s) where that is the case.
+Plot the actual values for 1989, 1990, and 1991 along with the predicted values from the forecast and a shaded 95% interval bands. The `geom_ribbon()` function may be useful here. Is there any point where the true value is outside the interval? If so, report the year(s) and month(s) where that is the case.
+
 
 
 ### Part i (5 points)
